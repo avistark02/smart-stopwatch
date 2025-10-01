@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Proximity Stopwatch</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>⏱️ Proximity Stopwatch</h1>
+
+    <!-- Stopwatch Display -->
+    <div id="stopwatch" aria-label="Stopwatch display">00:00:00</div>
+
+    <!-- Status Indicator -->
+    <p id="status" class="status-idle" aria-live="polite">🔵 Idle</p>
+
+    <!-- Restart Button -->
+    <button id="restart-btn" aria-label="Restart stopwatch">🔄 Restart</button>
+
+    <!-- Session Log Panel -->
+    <div id="session-log">
+      <h2>📋 Session Log</h2>
+      <ul id="log-entries" aria-label="Session log entries"></ul>
+    </div>
+  </div>
+
+  <script src="/static/script.js" defer></script>
+</body>
+</html>

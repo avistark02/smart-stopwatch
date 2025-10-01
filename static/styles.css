@@ -1,0 +1,55 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  text-align: center;
+  padding: 50px;
+}
+
+.container {
+  background: blue;
+  padding: 20px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+#stopwatch {
+  font-size: 2em;
+  margin: 20px 0;
+}
+
+#status {
+  font-size: 1.2em;
+  color: #333;
+}
+/* Make body take full screen */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Center container and make it responsive */
+.container {
+  background: rgb(102, 123, 159);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+#stopwatch {
+  font-size: 3em;
+  margin: 30px 0;
+}
+
+#status {
+  font-size: 1.5em;
+  color: #333;
+}
