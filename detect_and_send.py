@@ -1,16 +1,16 @@
 import cv2
-import requests
 import time
+import requests
 
-sensor_id = "123"
 server_url = "http://127.0.0.1:5000/status"
+sensor_id = "123"
 
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 cap = cv2.VideoCapture(0)
 
 def send_presence(presence):
     try:
-        requests.post(server_url, json={"id": sensor_id, "Presence": presence})
+        requests.post(server_url, json={sensor_id: presence})
         print(f"Sent: {presence}")
     except Exception as e:
         print("Error sending presence:", e)

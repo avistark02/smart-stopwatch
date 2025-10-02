@@ -1,42 +1,44 @@
-from flask import Flask, render_template, request, jsonify
-import threading
-import time
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+import json
+import os
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-status = {"state": "Idle"}
-buffer_time = 2
+CORS(app)
 
-def check_proximity():
-    return time.time() % 10 < 5
+STATUS_FILE = 'status.json'
 
-def monitor_proximity():
-    last_detected = 0
-    while True:
-        detected = check_proximity()
-        now = time.time()
+def load_status():
+    if os.path.exists(STATUS_FILE):
+        with open(STATUS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
 
-        if detected:
-            if now - last_detected > buffer_time:
-                status["state"] = "Active"
-            last_detected = now
-        else:
-            if now - last_detected > buffer_time:
-                status["state"] = "Idle"
+def save_status(data):
+    with open(STATUS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2)
+    print("Saved status:", data)
 
-        time.sleep(0.5)
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route('/status', methods=['POST'])
+def update_status():
+    data = request.get_json(force=True)
+    if not data:
+        return jsonify({'error': 'No JSON received'}), 400
 
-@app.route("/status", methods=["GET"])
-def get_status():
-    return jsonify(status)
+    status = load_status()
+    status.update(data)  # Merge new status
+    save_status(status)
+    return '', 204
 
-@app.route("/status/<sensor_id>", methods=["GET"])
-def get_status_by_id(sensor_id):
-    return jsonify({"Presence": status["state"].lower()})
+@app.route('/status/<sensor_id>', methods=['GET'])
+def get_status(sensor_id):
+    status = load_status()
+    presence = status.get(sensor_id, 'inactive')
+    return jsonify({'Presence': presence})
 
-if __name__ == "__main__":
-    threading.Thread(target=monitor_proximity, daemon=True).start()
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
