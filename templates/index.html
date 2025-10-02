@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Proximity Stopwatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
@@ -15,12 +16,16 @@
     <!-- Status Indicator -->
     <p id="status" class="status-idle" aria-live="polite">🔵 Idle</p>
 
-    <!-- Restart Button -->
-    <button id="restart-btn" aria-label="Restart stopwatch">🔄 Restart</button>
+    <!-- Control Buttons -->
+    <div class="controls">
+      <button id="restart-btn" aria-label="Restart stopwatch">🔄 Restart</button>
+      <button id="reconnect-btn" aria-label="Reconnect to presence sensor">🔄 Reconnect</button>
+    </div>
 
     <!-- Session Log Panel -->
     <div id="session-log">
       <h2>📋 Session Log</h2>
+      <button id="refresh-log" aria-label="Refresh session log">🔁 Refresh Log</button>
       <ul id="log-entries" aria-label="Session log entries"></ul>
     </div>
   </div>
