@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from datetime import datetime
 import json, os
+import webbrowser
+import threading
+import logging
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
@@ -10,15 +13,19 @@ STATUS_FILE = 'status.json'
 SESSION_LOG_FILE = 'session_log.json'
 session_tracker = {}
 
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+
 # Utility: Load JSON safely
 def load_json(path):
-    if os.path.exists(path):
-        with open(path, 'r') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return [] if path == SESSION_LOG_FILE else {}
-    return [] if path == SESSION_LOG_FILE else {}
+    if not os.path.exists(path):
+        with open(path, 'w') as f:
+            json.dump([] if path == SESSION_LOG_FILE else {}, f)
+    with open(path, 'r') as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return [] if path == SESSION_LOG_FILE else {}
 
 # Utility: Save JSON
 def save_json(path, data):
@@ -37,7 +44,7 @@ def log_session(sensor_id, start, end):
     log = load_json(SESSION_LOG_FILE)
     log.append(entry)
     save_json(SESSION_LOG_FILE, log)
-    print("Logged:", entry)
+    logging.info(f"Logged session: {entry}")
 
 # Home page
 @app.route('/')
@@ -78,9 +85,18 @@ def get_session_log():
 @app.route('/delete-log', methods=['POST'])
 def delete_session_log():
     save_json(SESSION_LOG_FILE, [])
-    print("Session log cleared.")
+    logging.info("Session log cleared.")
     return '', 204
 
-# Run the app
+# Auto-launch browser and run app
+def open_browser():
+    try:
+        webbrowser.open("http://127.0.0.1:5000")
+        logging.info("Browser launched.")
+    except Exception as e:
+        logging.error(f"Failed to open browser: {e}")
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    logging.info("Starting Flask app...")
+    threading.Timer(1.25, open_browser).start()
+    app.run(host='0.0.0.0', port=5000)
