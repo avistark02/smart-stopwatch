@@ -5,6 +5,20 @@
   <title>Proximity Stopwatch</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    #stopwatch.blink {
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.4; }
+    }
+
+    .controls button,
+    #session-log button {
+      margin-right: 8px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -26,6 +40,7 @@
     <div id="session-log">
       <h2>📋 Session Log</h2>
       <button id="refresh-log" aria-label="Refresh session log">🔁 Refresh Log</button>
+      <button id="delete-log" aria-label="Delete all session logs">🗑️ Delete Log</button>
       <ul id="log-entries" aria-label="Session log entries"></ul>
     </div>
   </div>

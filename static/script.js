@@ -32,6 +32,7 @@ function startStopwatch() {
     }, 1000);
     isRunning = true;
     updateStatus("Running", "🟢");
+    document.getElementById("stopwatch").classList.add("blink");
   }
 }
 
@@ -41,12 +42,13 @@ function stopStopwatch() {
     timerInterval = null;
     isRunning = false;
     updateStatus("Paused", "⏸️");
+    document.getElementById("stopwatch").classList.remove("blink");
     loadSessionLog();
   }
 }
 
 function handlePresence(status) {
-  if (disconnected) return; // Ignore presence updates if disconnected
+  if (disconnected) return;
 
   if (status === "active") {
     if (!presenceConfirmed) {
@@ -56,6 +58,8 @@ function handlePresence(status) {
         presenceConfirmed = true;
         startStopwatch();
       }
+    } else if (!isRunning) {
+      startStopwatch(); // Resume if confirmed but timer stopped
     }
   } else {
     presenceBufferStart = null;
@@ -137,6 +141,18 @@ function reconnectPresence() {
     });
 }
 
+function deleteSessionLog() {
+  fetch('/delete-log', { method: 'POST' })
+    .then(() => {
+      updateStatus("Session log cleared", "🗑️");
+      loadSessionLog();
+    })
+    .catch(err => {
+      console.error("Delete log failed:", err);
+      updateStatus("Failed to delete log", "⚠️");
+    });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("restart-btn").addEventListener("click", () => {
     elapsedTime = 0;
@@ -151,21 +167,25 @@ window.addEventListener("DOMContentLoaded", () => {
       .then(data => {
         if (data.Presence === "active") {
           presenceBufferStart = Date.now();
+          handlePresence("active");
         }
       });
   });
 
   document.getElementById("refresh-log").addEventListener("click", loadSessionLog);
   document.getElementById("reconnect-btn").addEventListener("click", reconnectPresence);
+  document.getElementById("delete-log").addEventListener("click", deleteSessionLog);
 
   loadSessionLog(); // Initial load
 });
 
+// Polling presence every second
 setInterval(pollPresence, 1000);
 
+// Fallback disconnection detection
 setInterval(() => {
   const now = Date.now();
-  if (now - lastUpdateTime > 20000 && !disconnected) {
+  if (now - lastUpdateTime > 30000 && !disconnected) {
     disconnected = true;
     currentPresence = "inactive";
     handlePresence("inactive");
