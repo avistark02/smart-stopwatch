@@ -23,6 +23,23 @@
       <h2>📋 Session Log</h2>
       <ul id="log-entries" aria-label="Session log entries"></ul>
     </div>
+
+    <!-- User Management Panel -->
+    <div id="user-management">
+      <h2>👥 Authorized Users</h2>
+      <p>Selected person: <span id="selected-person">None</span></p>
+      <p class="enroll-hint">Pictures come from enrollment. Older enrollments may show ? until you re-enroll (same name) via webcam or photo — your face data for the stopwatch still works.</p>
+      <ul id="authorized-users-list"></ul>
+      <div class="enroll-section">
+        <input type="text" id="new-user-name" placeholder="Enter name" />
+        <button type="button" id="enroll-btn">📷 Enroll (webcam)</button>
+        <p class="enroll-hint">Or enroll from a clear front-facing photo (same name field):</p>
+        <div class="enroll-photo-row">
+          <input type="file" id="photo-upload" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp" />
+          <button type="button" id="enroll-photo-btn">🖼️ Upload photo &amp; enroll</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="/static/script.js" defer></script>

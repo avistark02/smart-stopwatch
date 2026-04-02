@@ -1,3 +1,6 @@
 {
-  "123": "inactive"
+  "123": {
+    "Presence": "inactive",
+    "who": null
+  }
 }

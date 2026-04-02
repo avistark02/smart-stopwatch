@@ -7,14 +7,14 @@ a = Analysis(
     pathex=['C:\\Users\\HP\\Desktop\\smart-stopwatch'],
     binaries=[],
     datas=[
-         ('templates/index.html', 'templates')
+        ('templates/index.html', 'templates'),
         ('static/styles.css', 'static'),
         ('static/script.js', 'static'),
         ('status.json', '.'),
         ('detect_and_send.py', '.'),
         ('send_status.py', '.'),
     ],
-    hiddenimports=['flask', 'cv2', 'requests'],  # Add any other modules you use
+    hiddenimports=['flask', 'cv2', 'requests'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -38,7 +38,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # Set to True if you want terminal output
+    console=False,
     disable_windowed_traceback=True,
     argv_emulation=False,
     target_arch=None,

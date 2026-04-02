@@ -1,0 +1,7 @@
+face_recognition
+Pillow
+opencv-python
+requests
+flask
+flask-cors
+dlib

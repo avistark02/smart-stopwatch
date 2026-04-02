@@ -1,0 +1,6 @@
+{
+    // Add the local `typings` folder so Pylance can resolve workspace stubs
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/typings"
+    ]
+}
