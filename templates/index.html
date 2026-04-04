@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Proximity Stopwatch</title>
+  <title>Smart Stopwatch</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#00d4ff" />
+  <meta name="description" content="AI-Powered Presence Detection Study Tracker" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
@@ -12,48 +16,60 @@
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <h1>⏱️ Study Tracker</h1>
-      <p class="subtitle">AI-Powered Presence Detection</p>
+      <div class="header-badge">⏱️</div>
+      <h1 class="header-title">Smart Stopwatch</h1>
+      <p class="header-subtitle">AI-Powered Presence Detection</p>
     </div>
 
     <!-- Stopwatch Display -->
     <div class="stopwatch-card">
-      <div id="stopwatch" class="stopwatch-display" aria-label="Stopwatch display">00:00:00</div>
-      <p id="status" class="status-indicator" aria-live="polite">🔵 Idle</p>
+      <div class="stopwatch-wrapper">
+        <div id="stopwatch" class="stopwatch-display" aria-label="Stopwatch display">00:00:00</div>
+        <p id="status" class="status-indicator" aria-live="polite">🔵 Idle</p>
+      </div>
     </div>
 
     <!-- Control Buttons -->
     <div class="controls">
       <button id="restart-btn" class="btn btn-danger" aria-label="Restart stopwatch">
-        <span class="icon">🔄</span> Restart
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text">Restart</span>
       </button>
       <button id="reconnect-btn" class="btn btn-info" aria-label="Reconnect to presence sensor">
-        <span class="icon">🔗</span> Reconnect
+        <span class="btn-icon">🔗</span>
+        <span class="btn-text">Reconnect</span>
       </button>
     </div>
 
     <!-- Session Log Panel -->
     <div class="panel session-log-panel">
-      <h2>📋 Session History</h2>
-      <div class="button-row">
-        <button id="refresh-log" class="btn btn-sm btn-secondary" aria-label="Refresh session log">🔁 Refresh</button>
-        <button id="delete-log" class="btn btn-sm btn-danger" aria-label="Delete all session logs">🗑️ Clear</button>
+      <div class="panel-header">
+        <h2>📋 Session History</h2>
+        <div class="button-row">
+          <button id="refresh-log" class="btn btn-sm btn-secondary" aria-label="Refresh session log">🔁</button>
+          <button id="delete-log" class="btn btn-sm btn-danger" aria-label="Delete all session logs">🗑️</button>
+        </div>
       </div>
       <ul id="log-entries" class="log-entries" aria-label="Session log entries"></ul>
     </div>
 
     <!-- User Management Panel -->
     <div class="panel user-management-panel">
-      <h2>👥 Authorized Users</h2>
+      <div class="panel-header">
+        <h2>👥 Authorized Users</h2>
+      </div>
+
       <div class="selected-user-info">
-        <span class="label">Selected:</span> <span id="selected-person" class="selected-name">None</span>
+        <span class="label">Selected User:</span>
+        <span id="selected-person" class="selected-name">None</span>
       </div>
 
       <ul id="authorized-users-list" class="authorized-users-list"></ul>
 
       <div class="enroll-section">
-        <h3>Add New User</h3>
+        <h3>➕ Add New User</h3>
         <div class="form-group">
+          <label for="new-user-name" class="input-label">Full Name</label>
           <input
             type="text"
             id="new-user-name"
@@ -65,20 +81,28 @@
 
         <div class="enroll-methods">
           <button type="button" id="enroll-btn" class="btn btn-primary btn-full">
-            <span class="icon">📷</span> Enroll via Webcam
+            <span class="btn-icon">📷</span>
+            <span class="btn-text">Enroll via Webcam</span>
           </button>
 
-          <p class="section-hint">Or upload a photo:</p>
+          <div class="divider">
+            <span>Or upload photo</span>
+          </div>
+
           <div class="enroll-photo-row">
-            <input
-              type="file"
-              id="photo-upload"
-              class="file-input"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/bmp"
-              aria-label="Upload photo for enrollment"
-            />
+            <label for="photo-upload" class="file-input-wrapper">
+              <input
+                type="file"
+                id="photo-upload"
+                class="file-input"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/bmp"
+                aria-label="Upload photo for enrollment"
+              />
+              <span class="file-input-placeholder">📁 Choose Photo</span>
+            </label>
             <button type="button" id="enroll-photo-btn" class="btn btn-primary btn-full">
-              <span class="icon">🖼️</span> Upload &amp; Enroll
+              <span class="btn-icon">🖼️</span>
+              <span class="btn-text">Upload & Enroll</span>
             </button>
           </div>
         </div>

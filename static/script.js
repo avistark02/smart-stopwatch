@@ -306,11 +306,13 @@ function loadAuthorizedUsers() {
         li.appendChild(label);
 
         const selectBtn = document.createElement("button");
+        selectBtn.className = "btn btn-sm btn-secondary";
         selectBtn.textContent = "✅ Select";
         selectBtn.onclick = () => selectUser(name);
         li.appendChild(selectBtn);
 
         const removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-sm btn-danger";
         removeBtn.textContent = "❌ Remove";
         removeBtn.onclick = () => removeUser(name);
         li.appendChild(removeBtn);
@@ -387,6 +389,7 @@ function enrollFromPhoto() {
       if (data.success) {
         logEvent(data.message || "Enrolled from photo", "success");
         fileInput.value = "";
+        updatePhotoInputPlaceholder();
         loadAuthorizedUsers();
       } else {
         logEvent(`Photo enrollment failed: ${data.message}`, "error");
@@ -449,6 +452,16 @@ function removeUser(name) {
     });
 }
 
+function updatePhotoInputPlaceholder() {
+  const fileInput = document.getElementById("photo-upload");
+  const placeholder = document.querySelector(".file-input-placeholder");
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    placeholder.textContent = `📄 ${fileInput.files[0].name}`;
+  } else {
+    placeholder.textContent = "📁 Choose Photo";
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   logEvent("Application started", "info");
 
@@ -480,6 +493,11 @@ window.addEventListener("DOMContentLoaded", () => {
     enrollUser(name);
     document.getElementById("new-user-name").value = "";
   });
+
+  const photoInput = document.getElementById("photo-upload");
+  if (photoInput) {
+    photoInput.addEventListener("change", updatePhotoInputPlaceholder);
+  }
 
   document.getElementById("enroll-photo-btn").addEventListener("click", () => {
     enrollFromPhoto();

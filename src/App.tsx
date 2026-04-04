@@ -79,11 +79,12 @@ export default function App() {
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Blur orbs */}
-        <div className="absolute w-[800px] h-[800px] bg-gradient-to-br from-primary/30 via-secondary/20 to-transparent rounded-full blur-3xl -top-40 -left-40 animate-float"></div>
-        <div className="absolute w-[600px] h-[600px] bg-gradient-to-br from-tertiary/30 via-primary/10 to-transparent rounded-full blur-3xl -bottom-32 -right-32 animate-float-delayed"></div>
+        <div className="absolute w-[800px] h-[800px] bg-gradient-to-br from-primary/25 via-secondary/15 to-transparent rounded-full blur-3xl -top-40 -left-40 animate-float"></div>
+        <div className="absolute w-[600px] h-[600px] bg-gradient-to-br from-tertiary/20 via-primary/10 to-transparent rounded-full blur-3xl -bottom-32 -right-32 animate-float-delayed"></div>
+        <div className="absolute w-[500px] h-[500px] bg-gradient-to-br from-secondary/20 to-transparent rounded-full blur-2xl top-1/3 right-1/4 opacity-40 animate-float"></div>
 
         {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-5 bg-grid-pattern"></div>
+        <div className="absolute inset-0 opacity-[3%] bg-grid-pattern"></div>
       </div>
 
       <div className="relative z-10">
@@ -137,18 +138,18 @@ export default function App() {
             </div>
 
             {/* Footer Stats */}
-            <div className="mt-12 grid grid-cols-3 gap-4 opacity-60">
-              <div className="text-center">
-                <p className="text-2xl font-black text-primary">∞</p>
-                <p className="text-xs text-outline-variant mt-2">Live Tracking</p>
+            <div className="mt-16 grid grid-cols-3 gap-4 fade-in-up delay-3">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 text-center hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
+                <p className="text-3xl font-black text-primary mb-2">∞</p>
+                <p className="text-xs text-outline-variant font-label tracking-wider">Live Tracking</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-black text-secondary">AI</p>
-                <p className="text-xs text-outline-variant mt-2">Smart Detection</p>
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-transparent border border-secondary/20 text-center hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300">
+                <p className="text-3xl font-black text-secondary mb-2">AI</p>
+                <p className="text-xs text-outline-variant font-label tracking-wider">Smart Detection</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-black text-tertiary">✓</p>
-                <p className="text-xs text-outline-variant mt-2">Verified</p>
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-tertiary/10 to-transparent border border-tertiary/20 text-center hover:border-tertiary/40 hover:shadow-lg hover:shadow-tertiary/10 transition-all duration-300">
+                <p className="text-3xl font-black text-tertiary mb-2">✓</p>
+                <p className="text-xs text-outline-variant font-label tracking-wider">Verified</p>
               </div>
             </div>
           </div>
