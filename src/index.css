@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-surface text-[#f6f6fc] font-body;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #a1faff 0%, #ac89ff 100%);
+    border-radius: 10px;
+    border: 2px solid rgba(12, 14, 18, 0.8);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #a1faff 0%, #c3f400 100%);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-surface-container/60 backdrop-blur-xl;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px rgba(161, 250, 255, 0.4);
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(161, 250, 255, 0.4) rgba(255, 255, 255, 0.05);
+  }
+
+  /* Button base styles */
+  button {
+    @apply transition-all duration-300;
+  }
+
+  /* Form inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea {
+    @apply transition-all duration-300;
+  }
+
+  /* Animation utilities */
+  .animate-pulse-once {
+    animation: pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1);
+  }
+}
+
+@layer utilities {
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent;
+  }
+
+  /* Neon glow */
+  .neon-glow {
+    @apply shadow-lg shadow-primary/50;
+  }
+
+  /* Smooth scale on hover */
+  .hover-scale {
+    @apply hover:scale-105 transition-transform duration-300;
+  }
+
+  /* Loading spinner */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .spin-slow {
+    animation: spin 2s linear infinite;
+  }
+}

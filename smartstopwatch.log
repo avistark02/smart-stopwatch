@@ -5057,3 +5057,162 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid 
 2026-04-04 08:13:02,415 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:13:02] "GET /status/123 HTTP/1.1" 200 -
 2026-04-04 08:13:03,639 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:13:03] "GET /status/123 HTTP/1.1" 200 -
 2026-04-04 08:13:04,647 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:13:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:22,923 - __main__ - INFO - Monitor thread started
+2026-04-04 08:16:22,923 - root - INFO - Starting Flask app...
+2026-04-04 08:16:22,954 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.63.29.216:5000
+2026-04-04 08:16:22,954 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-04 08:16:22,961 - __main__ - INFO - cv2 imported OK
+2026-04-04 08:16:22,961 - __main__ - INFO - face_recognition imported OK
+2026-04-04 08:16:23,963 - __main__ - INFO - Attempting to open camera...
+2026-04-04 08:16:24,260 - root - INFO - Browser launched.
+2026-04-04 08:16:24,362 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:24] "GET / HTTP/1.1" 200 -
+2026-04-04 08:16:24,473 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:24] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2026-04-04 08:16:24,506 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:24] "GET /static/styles.css HTTP/1.1" 200 -
+2026-04-04 08:16:24,648 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-04 08:16:24,655 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:24] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-04 08:16:24,657 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:24] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-04 08:16:24,658 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:24] "GET /selected-user HTTP/1.1" 200 -
+2026-04-04 08:16:25,537 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:26,536 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:27,535 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:27,684 - __main__ - INFO - Camera opened successfully
+2026-04-04 08:16:28,536 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:29,537 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:30,535 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:31,536 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:31] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:32,536 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:33,534 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:34,535 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:35,534 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:36,533 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:37,533 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:38,532 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:16:39,532 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:16:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:44,418 - __main__ - INFO - Monitor thread started
+2026-04-04 08:20:44,418 - root - INFO - Starting Flask app...
+2026-04-04 08:20:44,503 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.63.29.216:5000
+2026-04-04 08:20:44,504 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-04 08:20:44,510 - __main__ - INFO - cv2 imported OK
+2026-04-04 08:20:44,510 - __main__ - INFO - face_recognition imported OK
+2026-04-04 08:20:45,511 - __main__ - INFO - Attempting to open camera...
+2026-04-04 08:20:45,745 - root - INFO - Browser launched.
+2026-04-04 08:20:46,112 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "GET / HTTP/1.1" 200 -
+2026-04-04 08:20:46,303 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2026-04-04 08:20:46,310 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2026-04-04 08:20:46,488 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "GET /selected-user HTTP/1.1" 200 -
+2026-04-04 08:20:46,513 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-04 08:20:46,527 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-04 08:20:46,537 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-04-04 08:20:46,544 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:46] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-04 08:20:47,433 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:47] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:48,447 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:49,433 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:50,447 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:50] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:50,779 - __main__ - INFO - Camera opened successfully
+2026-04-04 08:20:51,452 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:51] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:52,447 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:20:53,431 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:20:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:25:13,818 - __main__ - INFO - Monitor thread started
+2026-04-04 08:25:13,819 - root - INFO - Starting Flask app...
+2026-04-04 08:25:13,845 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.63.29.216:5000
+2026-04-04 08:25:13,846 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-04 08:25:13,855 - __main__ - INFO - cv2 imported OK
+2026-04-04 08:25:13,855 - __main__ - INFO - face_recognition imported OK
+2026-04-04 08:25:14,856 - __main__ - INFO - Attempting to open camera...
+2026-04-04 08:25:15,140 - root - INFO - Browser launched.
+2026-04-04 08:25:15,474 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "GET / HTTP/1.1" 200 -
+2026-04-04 08:25:15,658 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2026-04-04 08:25:15,659 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2026-04-04 08:25:15,785 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-04 08:25:15,793 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-04 08:25:15,794 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-04 08:25:15,796 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "GET /selected-user HTTP/1.1" 200 -
+2026-04-04 08:25:15,806 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:15] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-04-04 08:25:16,775 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:16] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:25:17,762 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:25:18,772 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:25:19,771 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:19] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:25:20,657 - __main__ - INFO - Camera opened successfully
+2026-04-04 08:25:20,776 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 08:25:21,772 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:25:21] "GET /status/123 HTTP/1.1" 200 -
