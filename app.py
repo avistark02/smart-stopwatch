@@ -331,14 +331,14 @@ def api_enroll():
     if not name:
         return jsonify({"success": False, "message": "Name is required"}), 400
     try:
-        success = enroll_face(name, timeout=30)
+        success, message = enroll_face(name, timeout=30)
     except Exception as e:
         logger.error(f"Enrollment error for {name}: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
     if not success:
-        return jsonify({"success": False, "message": "Face enrollment failed"}), 400
+        return jsonify({"success": False, "message": message}), 400
     logger.info(f"Successfully enrolled: {name}")
-    return jsonify({"success": True, "message": "Enrollment complete"})
+    return jsonify({"success": True, "message": message})
 
 
 @app.route("/enroll-image", methods=["POST"])
@@ -351,15 +351,13 @@ def api_enroll_image():
     if not image_path:
         return jsonify({"success": False, "message": "image_path is required"}), 400
     try:
-        success = enroll_from_image(name, image_path)
+        success, message = enroll_from_image(name, image_path)
     except Exception as e:
         logger.error(f"Image enrollment error for {name}: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
     if not success:
-        return jsonify(
-            {"success": False, "message": "Image enrollment failed — check the photo"}
-        ), 400
-    return jsonify({"success": True, "message": f"'{name}' enrolled from photo"})
+        return jsonify({"success": False, "message": message}), 400
+    return jsonify({"success": True, "message": message})
 
 
 @app.route("/enroll-photo", methods=["POST"])
@@ -375,7 +373,7 @@ def api_enroll_photo():
     )
     f.save(path)
     try:
-        success = enroll_from_image(name, path)
+        success, message = enroll_from_image(name, path)
     except Exception as e:
         logger.error(f"Photo upload enrollment error for {name}: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
@@ -385,10 +383,8 @@ def api_enroll_photo():
         except OSError:
             pass
     if not success:
-        return jsonify(
-            {"success": False, "message": "Image enrollment failed — check the photo"}
-        ), 400
-    return jsonify({"success": True, "message": f"'{name}' enrolled from photo"})
+        return jsonify({"success": False, "message": message}), 400
+    return jsonify({"success": True, "message": message})
 
 
 @app.route("/remove-user", methods=["POST"])

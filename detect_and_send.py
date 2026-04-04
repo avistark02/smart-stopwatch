@@ -88,37 +88,67 @@ def detect_faces_opencv(frame: Any) -> List[Tuple[int, int, int, int]]:
 # Enroll from PHOTO FILE
 # ---------------------------------------------------------------------------
 
-def enroll_from_image(name: str, image_path: str) -> bool:
+def check_if_face_already_enrolled(face_encoding) -> Optional[str]:
+    """Check if a face encoding matches any already-enrolled face.
+
+    Returns:
+        Name of the enrolled person if found, None otherwise.
+    """
+    if not USE_FACE_RECOG:
+        return None
+
+    known = load_known_faces()
+    if not known:
+        return None
+
+    known_names = list(known.keys())
+    known_encodings = list(known.values())
+
+    distances = face_recognition.face_distance(known_encodings, face_encoding)
+    best_idx = int(min(range(len(distances)), key=lambda j: distances[j]))
+    best_dist = distances[best_idx]
+
+    if best_dist < FACE_TOLERANCE:
+        return known_names[best_idx]
+    return None
+
+
+def enroll_from_image(name: str, image_path: str) -> tuple[bool, str]:
     """Enroll a face from a photo file — better accuracy than a laptop webcam.
 
     Tips for best results:
     - Use a clear, well-lit front-facing photo
     - Only one face should be in the photo
     - Phone selfies in good light work great
+
+    Returns:
+        (success: bool, message: str)
     """
     if not USE_FACE_RECOG:
         logger.error("face_recognition package required for enrollment.")
-        return False
+        return False, "face_recognition package required"
 
     name = normalize_name(name)
 
     if not os.path.isfile(image_path):
-        print(f"ERROR: File not found: {image_path}")
-        return False
+        msg = f"File not found: {image_path}"
+        print(f"ERROR: {msg}")
+        return False, msg
 
     try:
         image = face_recognition.load_image_file(image_path)
     except Exception as e:
-        print(f"ERROR: Could not open image: {e}")
-        return False
+        msg = f"Could not open image: {e}"
+        print(f"ERROR: {msg}")
+        return False, msg
 
     print(f"Processing photo for '{name}'...")
     locations = face_recognition.face_locations(image, model="hog")
 
     if len(locations) == 0:
-        print("ERROR: No face detected in the photo.")
-        print("Tips: Use a clear front-facing photo with good lighting.")
-        return False
+        msg = "No face detected in the photo. Use a clear front-facing photo with good lighting."
+        print(f"ERROR: {msg}")
+        return False, msg
 
     if len(locations) > 1:
         print(f"WARNING: {len(locations)} faces found. Using the largest one.")
@@ -130,25 +160,45 @@ def enroll_from_image(name: str, image_path: str) -> bool:
     # num_jitters=10 re-samples the face 10 times for a more robust encoding
     encodings = face_recognition.face_encodings(image, locations, num_jitters=10)
     if not encodings:
-        print("ERROR: Could not compute face encoding. Try a clearer photo.")
-        return False
+        msg = "Could not compute face encoding. Try a clearer photo."
+        print(f"ERROR: {msg}")
+        return False, msg
+
+    # Check if this face is already enrolled
+    detected_as = check_if_face_already_enrolled(encodings[0])
+    if detected_as:
+        if detected_as == name:
+            msg = f"'{name}' is already enrolled. Re-enrollment will update their face data."
+            print(f"INFO: {msg}")
+            set_face_encoding(name, encodings[0])
+            logger.info(f"Re-enrolled '{name}' from image: {image_path}")
+            return True, msg
+        else:
+            msg = f"This face is already enrolled as '{detected_as}', not '{name}'"
+            print(f"ERROR: {msg}")
+            return False, msg
 
     set_face_encoding(name, encodings[0])
     add_authorized_user(name)
-    print(f"SUCCESS: '{name}' enrolled from photo: {image_path}")
+    msg = f"'{name}' enrolled from photo"
+    print(f"SUCCESS: {msg}")
     logger.info(f"Enrolled '{name}' from image: {image_path}")
-    return True
+    return True, msg
 
 
 # ---------------------------------------------------------------------------
 # Enroll from WEBCAM (improved: collects multiple samples)
 # ---------------------------------------------------------------------------
 
-def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> bool:
-    """Enroll via webcam. Collects 5 samples and averages them for accuracy."""
+def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str]:
+    """Enroll via webcam. Collects 5 samples and averages them for accuracy.
+
+    Returns:
+        (success: bool, message: str)
+    """
     if not USE_FACE_RECOG:
         logger.error("face_recognition package required.")
-        return False
+        return False, "face_recognition package required"
 
     import numpy as np
     name = normalize_name(name)
@@ -201,14 +251,37 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> bool:
 
                     if len(collected) >= REQUIRED_SAMPLES:
                         final_encoding = np.mean(collected, axis=0)
+
+                        # Check if this face is already enrolled
+                        detected_as = check_if_face_already_enrolled(final_encoding)
+                        if detected_as:
+                            if detected_as == name:
+                                msg = f"'{name}' is already enrolled. Re-enrollment will update their face data."
+                                cv2.putText(frame, "Already enrolled! Updating...", (10, 120),
+                                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 165, 255), 2)
+                                cv2.imshow("Enroll", frame)
+                                cv2.waitKey(2000)
+                                set_face_encoding(name, final_encoding)
+                                logger.info(f"Re-enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
+                                return True, msg
+                            else:
+                                msg = f"This face is already enrolled as '{detected_as}', not '{name}'"
+                                cv2.putText(frame, f"Already enrolled as: {detected_as}", (10, 120),
+                                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                                cv2.imshow("Enroll", frame)
+                                cv2.waitKey(2000)
+                                logger.warning(msg)
+                                return False, msg
+
                         set_face_encoding(name, final_encoding)
                         add_authorized_user(name)
                         cv2.putText(frame, "Enrolled successfully!", (10, 120),
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                         cv2.imshow("Enroll", frame)
                         cv2.waitKey(2000)
+                        msg = f"'{name}' enrolled successfully"
                         logger.info(f"Enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
-                        return True
+                        return True, msg
 
             cv2.putText(frame, "Press Q to cancel", (10, frame.shape[0] - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
@@ -220,8 +293,9 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> bool:
         cap.release()
         cv2.destroyAllWindows()
 
-    logger.warning("Enrollment timed out or cancelled")
-    return False
+    msg = "Enrollment timed out or cancelled"
+    logger.warning(msg)
+    return False, msg
 
 
 # ---------------------------------------------------------------------------
