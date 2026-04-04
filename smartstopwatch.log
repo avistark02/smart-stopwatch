@@ -4743,3 +4743,51 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid 
 2026-04-03 20:52:51,642 - werkzeug - INFO - 127.0.0.1 - - [03/Apr/2026 20:52:51] "GET /status/123 HTTP/1.1" 200 -
 2026-04-03 20:52:52,634 - werkzeug - INFO - 127.0.0.1 - - [03/Apr/2026 20:52:52] "GET /status/123 HTTP/1.1" 200 -
 2026-04-03 20:52:53,629 - werkzeug - INFO - 127.0.0.1 - - [03/Apr/2026 20:52:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 07:58:34,556 - __main__ - INFO - Monitor thread started
+2026-04-04 07:58:34,557 - root - INFO - Starting Flask app...
+2026-04-04 07:58:34,591 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.63.29.216:5000
+2026-04-04 07:58:34,591 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-04 07:58:34,820 - __main__ - INFO - cv2 imported OK
+2026-04-04 07:58:34,820 - __main__ - INFO - face_recognition imported OK
+2026-04-04 07:58:35,821 - __main__ - INFO - Attempting to open camera...
+2026-04-04 07:58:35,908 - root - INFO - Browser launched.
+2026-04-04 07:58:36,063 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "GET / HTTP/1.1" 200 -
+2026-04-04 07:58:36,226 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "GET /static/styles.css HTTP/1.1" 200 -
+2026-04-04 07:58:36,233 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "GET /static/script.js HTTP/1.1" 200 -
+2026-04-04 07:58:36,439 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-04 07:58:36,442 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-04 07:58:36,445 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "GET /selected-user HTTP/1.1" 200 -
+2026-04-04 07:58:36,447 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-04-04 07:58:36,514 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:36] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-04 07:58:37,340 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 07:58:38,339 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 07:58:38,730 - __main__ - INFO - Camera opened successfully
+2026-04-04 07:58:39,329 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-04 07:58:40,342 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 07:58:40] "GET /status/123 HTTP/1.1" 200 -
