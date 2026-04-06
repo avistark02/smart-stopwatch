@@ -11,7 +11,9 @@ from typing import Any, Dict, List, Optional, Tuple
 import argparse
 import time
 import logging
+import math
 import os
+import threading
 import numpy as np
 
 from storage import (
@@ -20,7 +22,8 @@ from storage import (
 )
 from config import (
     FACE_TOLERANCE, FACE_MIN_WIDTH, FACE_MAX_WIDTH, POLL_INTERVAL,
-    SERVER_URL, SENSOR_ID, ENROLLMENT_TIMEOUT, LOG_LEVEL, LOG_FILE
+    SERVER_URL, SENSOR_ID, ENROLLMENT_TIMEOUT, LOG_LEVEL, LOG_FILE,
+    ENROLLMENT_RECHECK_TOLERANCE
 )
 
 logging.basicConfig(
@@ -40,6 +43,116 @@ def _get_cv2():
         return cv2
     except Exception as e:
         raise RuntimeError("opencv-python required. Run: pip install opencv-python") from e
+
+
+def _open_camera(index: int = 0):
+    """Open webcam with stable settings for Windows OpenCV.
+
+    Strategy:
+      1. Try MSMF (default) with explicit MJPEG + 640x480 — clean decoded frames.
+         The previous MSMF bug (Error -1072873821) was caused by double cap.grab();
+         that is now removed, so MSMF is safe again and avoids DirectShow format issues.
+      2. Fall back to CAP_DSHOW if MSMF fails to open.
+
+    Horizontal static with CAP_DSHOW is caused by format negotiation failure:
+    DirectShow sometimes picks NV12/YUY2 with incorrect stride, causing visual corruption.
+    """
+    cv2 = _get_cv2()
+
+    def _configure(cap):
+        """Set resolution and MJPEG codec — avoids raw YUV format mismatches."""
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FPS, 30)
+
+    # 1. Try MSMF (default backend — works cleanly once double-grab is removed)
+    cap = cv2.VideoCapture(index)
+    if cap.isOpened():
+        _configure(cap)
+        logger.info(f"Camera {index} opened via MSMF (default backend)")
+        return cap
+    cap.release()
+
+    # 2. Fallback: DirectShow
+    logger.warning("MSMF failed, trying CAP_DSHOW fallback")
+    cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
+    if cap.isOpened():
+        _configure(cap)
+        logger.info(f"Camera {index} opened via DirectShow (CAP_DSHOW)")
+        return cap
+    cap.release()
+
+    raise RuntimeError(
+        f"Could not open camera at index {index}. "
+        "Check that no other app (Teams, Zoom, etc.) is using the camera."
+    )
+
+
+def _is_frame_valid(frame) -> bool:
+    """Return False for corrupt, black, or static-noise frames.
+
+    Used to:
+      1. Gate the warmup loop (wait for camera to produce a real image)
+      2. Softly skip face detection on bad frames (display still updates)
+
+    Thresholds are intentionally wide — do NOT use this to gate cv2.imshow().
+    Always show the frame to keep the feed live; only skip processing here.
+
+    std < 2   → all-black / camera not initialised yet
+    std > 127 → pure random static / corrupt signal (max possible is ~73 for
+                uniform noise, so 127 gives a generous safety margin for real scenes
+                with extreme contrast like bright windows or LED backlighting)
+    """
+    if frame is None:
+        return False
+    if len(frame.shape) < 2 or frame.shape[0] < 10 or frame.shape[1] < 10:
+        return False
+    std = float(frame.std())
+    return 2.0 < std < 127.0
+
+
+class CameraStream:
+    """Background thread to drain camera buffer.
+    
+    Processing face_locations takes ~150ms per frame. If we read synchronously, 
+    the camera buffer fills up, causing brutal delay or freezing the MSMF driver.
+    This thread reads as fast as the camera can output, always keeping the most
+    recent frame in memory for the main loop to use immediately.
+    """
+    def __init__(self, index: int = 0):
+        self.cap = _open_camera(index)
+        self.ret, self.frame = self.cap.read()
+        self.stopped = False
+        self.lock = threading.Lock()
+
+    def start(self):
+        self.thread = threading.Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.thread.start()
+        return self
+
+    def update(self):
+        while not self.stopped:
+            ret, frame = self.cap.read()
+            with self.lock:
+                self.ret = ret
+                if ret and frame is not None:
+                    self.frame = frame
+
+    def read(self):
+        # Return a copy of the latest frame to avoid thread-safety tearing during imshow
+        with self.lock:
+            if not self.ret or self.frame is None:
+                return False, None
+            return self.ret, self.frame.copy()
+
+    def release(self):
+        self.stopped = True
+        if hasattr(self, 'thread'):
+            self.thread.join(timeout=1.0)
+        if self.cap:
+            self.cap.release()
 
 
 def _get_requests():
@@ -89,9 +202,14 @@ def detect_faces_opencv(frame: Any) -> List[Tuple[int, int, int, int]]:
 # Enroll from PHOTO FILE
 # ---------------------------------------------------------------------------
 
-def check_if_face_already_enrolled(face_encoding) -> Optional[str]:
+def check_if_face_already_enrolled(face_encoding, tolerance: float = FACE_TOLERANCE) -> Optional[str]:
     """Check if a face encoding matches any already-enrolled face.
 
+    Args:
+        face_encoding: The face encoding to check.
+        tolerance: Distance threshold. Use ENROLLMENT_RECHECK_TOLERANCE (0.60) when
+                   checking during webcam enrollment (num_jitters=1 live vs stored
+                   higher-jitter encodings have more variance for the same face).
     Returns:
         Name of the enrolled person if found, None otherwise.
     """
@@ -109,7 +227,8 @@ def check_if_face_already_enrolled(face_encoding) -> Optional[str]:
     best_idx = int(min(range(len(distances)), key=lambda j: distances[j]))
     best_dist = distances[best_idx]
 
-    if best_dist < FACE_TOLERANCE:
+    logger.debug(f"Duplicate check — best match: {known_names[best_idx]} dist={best_dist:.3f} (threshold={tolerance})")
+    if best_dist < tolerance:
         return known_names[best_idx]
     return None
 
@@ -192,30 +311,71 @@ def enroll_from_image(name: str, image_path: str) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 
 def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str]:
-    """Enroll via webcam. Collects 5 samples and averages them for accuracy."""
+    """Enroll via webcam. Collects REQUIRED_SAMPLES good samples then averages them.
+
+    Resilient to brief face movements:
+    - Grace buffer: 8 consecutive missing frames before showing a warning
+    - Timeout pauses when face is absent (only counts down active scanning time)
+    - Collected samples are NEVER reset due to movement
+    """
     if not USE_FACE_RECOG:
         logger.error("face_recognition package required.")
         return False, "face_recognition package required"
 
     name = normalize_name(name)
     cv2 = _get_cv2()
-    cap = cv2.VideoCapture(0)
-    
-    # Drain stale frames
-    for _ in range(10):
-        cap.read()
+    # Start the background thread which prevents buffer overflow freezes
+    cap = CameraStream(0).start()
 
-    start = time.time()
+    # Drain frames until we get a clean, non-corrupt frame (or give up after 3s)
+    logger.info("Waiting for camera to produce a clean frame...")
+    _warmup_deadline = time.time() + 3.0
+    while time.time() < _warmup_deadline:
+        ret, frame = cap.read()
+        if ret and _is_frame_valid(frame):
+            logger.info("Camera ready (clean frame received)")
+            break
+        time.sleep(0.05)
+    else:
+        logger.warning("Camera warmup timed out — may produce distorted frames initially")
+
     REQUIRED_SAMPLES = 5
-    collected = []
-    logger.info(f"Webcam enrollment for '{name}', timeout={timeout}s")
+    SAMPLE_COOLDOWN  = 0.3   # Min seconds between samples (forces diverse angles)
+    GRACE_FRAMES     = 8     # Consecutive frames without face before showing warning
+                             # ~8 frames ≈ 0.5-1s at typical processing speed
+
+    collected        = []
+    last_sample_time = 0.0
+    no_face_streak   = 0     # Consecutive frames with no valid face
+    active_elapsed   = 0.0   # Seconds spent actively scanning (face present)
+    last_active_time = None  # Wall-clock time when face was last actively scanning
+
+    result_msg      = ""
+    result_success  = False
+    result_deadline = None
+
+    logger.info(f"Webcam enrollment for '{name}', timeout={timeout}s (active face time)")
 
     try:
-        while time.time() - start < timeout:
+        while True:
+            # ── Post-result: keep camera live for 2.5s showing outcome ──────
+            if result_deadline is not None:
+                if time.time() > result_deadline:
+                    break
+
+            # ── Timeout: only counts down ACTIVE face-scanning time ──────────
+            elif active_elapsed >= timeout:
+                result_msg = "Enrollment timed out — position face in frame and try again"
+                result_success = False
+                break
+
+            # Read latest frame
             ret, frame = cap.read()
             if not ret or frame is None:
+                time.sleep(0.05)
                 continue
 
+            # Normalize to 8-bit BGR (handles RGBA, 16-bit, grayscale webcams)
             if frame.dtype != np.uint8:
                 frame = (frame / frame.max() * 255).astype(np.uint8) if frame.max() > 0 else frame.astype(np.uint8)
             if len(frame.shape) == 2:
@@ -223,88 +383,140 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str
             elif frame.shape[2] == 4:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            locations = face_recognition.face_locations(rgb, model="hog")
-            
-            time_left = int(timeout - (time.time() - start))
-            progress = f"{len(collected)}/{REQUIRED_SAMPLES}"
+            # ── Post-result display on live feed ─────────────────────────────
+            if result_deadline is not None:
+                color = (0, 255, 0) if result_success else (0, 0, 255)
+                cv2.putText(frame, result_msg, (10, 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+                secs_left = max(0, int(result_deadline - time.time()))
+                cv2.putText(frame, f"Closing in {secs_left}s...", (10, 90),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+                cv2.imshow("Enroll", frame)
+                cv2.waitKey(1)
+                continue
 
-            if len(locations) == 0:
-                cv2.putText(frame, "No face detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            elif len(locations) > 1:
-                cv2.putText(frame, "Multiple faces detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            # ── Detect face ───────────────────────────────────────────────────
+            # NOTE: we NEVER skip cv2.imshow() — always show the frame to keep
+            # the feed live. Only face detection is skipped on bad frames.
+            locations = []
+            if _is_frame_valid(frame):
+                try:
+                    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    locations = face_recognition.face_locations(rgb, model="hog")
+                except Exception as e:
+                    logger.warning(f"face_locations error (frame shown, detection skipped): {e}")
+                    locations = []
             else:
+                logger.debug("Corrupt/invalid frame — display updated, face detection skipped")
+
+
+            progress   = f"{len(collected)}/{REQUIRED_SAMPLES}"
+            face_ok    = False   # True when exactly one face is in the good size range
+
+            if len(locations) == 0 or len(locations) > 1:
+                no_face_streak += 1
+                # Pause active-time counter when face is absent
+                last_active_time = None
+
+                # Only show warning after GRACE_FRAMES consecutive missing frames
+                # so 1-2 frame blips are invisible to the user
+                if no_face_streak > GRACE_FRAMES:
+                    if len(locations) == 0:
+                        msg_text = "No face — look at the camera"
+                    else:
+                        msg_text = "Multiple faces — only one person"
+                    cv2.putText(frame, msg_text, (10, 40),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                else:
+                    # Grace period: show last known progress as if nothing changed
+                    cv2.putText(frame, f"Samples: {progress}", (10, 35),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
+                    cv2.putText(frame, "Hold still...", (10, 75),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 200, 0), 2)
+            else:
+                # Valid single face — reset streak and accumulate active time
+                no_face_streak = 0
+                now = time.time()
+                if last_active_time is not None:
+                    active_elapsed += now - last_active_time
+                last_active_time = now
+
                 top, right, bottom, left = locations[0]
-                width = right - left
+                width  = right - left
                 height = bottom - top
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                cv2.putText(frame, f"Samples: {progress} | Time: {time_left}s", (10, 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
+                cv2.putText(frame, f"Samples: {progress}", (10, 35),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
 
                 if width < FACE_MIN_WIDTH or height < FACE_MIN_WIDTH:
-                    cv2.putText(frame, "Move closer", (10, 70),
+                    cv2.putText(frame, "Move closer", (10, 75),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
                 elif width > FACE_MAX_WIDTH or height > FACE_MAX_WIDTH:
-                    cv2.putText(frame, "Move farther back", (10, 70),
+                    cv2.putText(frame, "Move farther back", (10, 75),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
                 else:
-                    cv2.putText(frame, "Hold still...", (10, 70),
+                    face_ok = True
+                    cv2.putText(frame, "Hold still...", (10, 75),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-                    try:
-                        # num_jitters=1 per sample for speed; final encoding averages 5 samples
-                        encs = face_recognition.face_encodings(rgb, locations, num_jitters=1)
-                        if encs:
-                            collected.append(encs[0])
-                            logger.debug(f"Sample {len(collected)} captured")
-                    except Exception as e:
-                        logger.warning(f"Encoding error (skipping sample): {e}")
 
-                if len(collected) >= REQUIRED_SAMPLES:
-                    final_encoding = np.mean(collected, axis=0)
-                    detected_as = check_if_face_already_enrolled(final_encoding)
+                    if now - last_sample_time >= SAMPLE_COOLDOWN:
+                        try:
+                            encs = face_recognition.face_encodings(rgb, locations, num_jitters=2)
+                            if encs:
+                                collected.append(encs[0])
+                                last_sample_time = now
+                                logger.debug(f"Sample {len(collected)}/{REQUIRED_SAMPLES} captured")
+                        except Exception as e:
+                            logger.warning(f"Encoding error (skipping sample): {e}")
 
-                    if detected_as:
-                        if detected_as == name:
-                            msg = f"'{name}' is already enrolled. Updating face data."
-                            cv2.putText(frame, "Already enrolled! Updating...", (10, 120),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 165, 255), 2)
-                            cv2.imshow("Enroll", frame)
-                            cv2.waitKey(2000)
-                            set_face_encoding(name, final_encoding)
-                            logger.info(f"Re-enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
-                            return True, msg
-                        else:
-                            msg = f"This face is already enrolled as '{detected_as}', not '{name}'"
-                            cv2.putText(frame, f"Already enrolled as: {detected_as}", (10, 120),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-                            cv2.imshow("Enroll", frame)
-                            cv2.waitKey(2000)
-                            logger.warning(msg)
-                            return False, msg
+            # ── Check completion (runs every frame — movement-safe) ───────────
+            if len(collected) >= REQUIRED_SAMPLES:
+                final_encoding = np.mean(collected, axis=0)
+                detected_as = check_if_face_already_enrolled(
+                    final_encoding, tolerance=ENROLLMENT_RECHECK_TOLERANCE
+                )
 
+                if detected_as:
+                    if detected_as == name:
+                        result_msg = f"Already enrolled as '{name}' — updating face data"
+                        result_success = True
+                        set_face_encoding(name, final_encoding)
+                        logger.info(f"Re-enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
+                    else:
+                        result_msg = f"Face already enrolled as '{detected_as}' — cannot enroll as '{name}'"
+                        result_success = False
+                        logger.warning(result_msg)
+                else:
                     set_face_encoding(name, final_encoding)
                     add_authorized_user(name)
-                    cv2.putText(frame, "Enrolled successfully!", (10, 120),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    cv2.imshow("Enroll", frame)
-                    cv2.waitKey(2000)
-                    msg = f"'{name}' enrolled successfully"
+                    result_msg = f"'{name}' enrolled successfully!"
+                    result_success = True
                     logger.info(f"Enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
-                    return True, msg
 
-            cv2.putText(frame, f"Time: {time_left}s | Press Q to cancel", (10, frame.shape[0] - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                result_deadline = time.time() + 2.5
+                collected = []  # Reset so completion doesn't re-trigger
+
+            # ── HUD footer ────────────────────────────────────────────────────
+            time_left = max(0, int(timeout - active_elapsed))
+            cv2.putText(frame, f"Active time left: {time_left}s  |  Q = cancel",
+                        (10, frame.shape[0] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 180, 180), 1)
             cv2.imshow("Enroll", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
+                result_msg = "Enrollment cancelled"
+                result_success = False
                 break
 
     finally:
         cap.release()
         cv2.destroyAllWindows()
 
-    msg = "Enrollment timed out or cancelled"
-    logger.warning(msg)
-    return False, msg
+    if not result_msg:
+        result_msg = "Enrollment timed out or cancelled"
+        result_success = False
+        logger.warning(result_msg)
+
+    return result_success, result_msg
 
 
 # ---------------------------------------------------------------------------
@@ -346,7 +558,7 @@ def load_face_encoding_from_image(image_path: str):
 
 def run_detection(poll_interval: float = POLL_INTERVAL, match_encoding=None) -> None:
     cv2 = _get_cv2()
-    cap = cv2.VideoCapture(0)
+    cap = CameraStream(0).start()
 
     last_status = "inactive"
     inactive_count = 0

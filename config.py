@@ -6,11 +6,12 @@ import os
 _ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Face Recognition
-FACE_TOLERANCE = 0.45  # Tightened from 0.6 — reduces false matches between people
-                        # Lower = stricter. Range: 0.0 (strictest) to 1.0 (loosest)
-                        # 0.45 works well for clear photos; raise to 0.5 if too strict
-# Slightly stricter: block enrolling the same face under a second name (duplicate identity)
-FACE_DUPLICATE_TOLERANCE = 0.42
+FACE_TOLERANCE = 0.45          # Detection: stricter match needed to recognize a known person
+                                # Lower = stricter. Range: 0.0 (strictest) to 1.0 (loosest)
+FACE_DUPLICATE_TOLERANCE = 0.42 # Block enrolling a DIFFERENT face under same name
+ENROLLMENT_RECHECK_TOLERANCE = 0.60  # Re-enrollment: more lenient — same person across sessions
+                                      # num_jitters=1 live vs stored num_jitters=5 adds ~0.05-0.10 distance
+                                      # so we allow up to 0.60 to correctly detect the same person
 FACE_MIN_WIDTH = 80    # Minimum face width in pixels for enrollment (relaxed for laptop cams)
 FACE_MAX_WIDTH = 350   # Maximum face width in pixels for enrollment (relaxed)
 
