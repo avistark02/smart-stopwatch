@@ -10,7 +10,7 @@ Write-Host "   Smart Stopwatch - Setup Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# ── Check Python ──────────────────────────────────────────
+# -- Check Python ----------------------------------------------------------
 Write-Host "Checking Python..." -ForegroundColor Yellow
 $pythonVersion = python --version 2>&1
 if ($LASTEXITCODE -ne 0) {
@@ -19,7 +19,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Found: $pythonVersion" -ForegroundColor Green
 
-# ── Check Node.js ─────────────────────────────────────────
+# -- Check Node.js ---------------------------------------------------------
 Write-Host ""
 Write-Host "Checking Node.js..." -ForegroundColor Yellow
 $nodeVersion = node --version 2>&1
@@ -29,7 +29,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Found: Node $nodeVersion" -ForegroundColor Green
 
-# ── Create Virtual Environment ────────────────────────────
+# -- Create Virtual Environment --------------------------------------------
 Write-Host ""
 Write-Host "Setting up Python virtual environment..." -ForegroundColor Yellow
 if (Test-Path ".venv") {
@@ -39,20 +39,20 @@ if (Test-Path ".venv") {
     Write-Host "Virtual environment created." -ForegroundColor Green
 }
 
-# ── Activate Virtual Environment ──────────────────────────
+# -- Activate Virtual Environment ------------------------------------------
 Write-Host ""
 Write-Host "Activating virtual environment..." -ForegroundColor Yellow
 & .\.venv\Scripts\Activate.ps1
 
-# ── Upgrade pip ───────────────────────────────────────────
+# -- Upgrade pip -----------------------------------------------------------
 Write-Host ""
 Write-Host "Upgrading pip..." -ForegroundColor Yellow
 python -m pip install --upgrade pip setuptools wheel
 
-# ── Install Python Dependencies ───────────────────────────
+# -- Install Python Dependencies -------------------------------------------
 Write-Host ""
 Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
-Write-Host "(This may take a few minutes — dlib takes a while to install)" -ForegroundColor Gray
+Write-Host "(This may take a few minutes - dlib takes a while to install)" -ForegroundColor Gray
 Write-Host ""
 pip install -r requirements.txt
 
@@ -73,7 +73,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Python dependencies installed." -ForegroundColor Green
 
-# ── Install Node.js Dependencies ──────────────────────────
+# -- Install Node.js Dependencies ------------------------------------------
 Write-Host ""
 Write-Host "Installing Node.js dependencies..." -ForegroundColor Yellow
 npm install
@@ -86,7 +86,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Node.js dependencies installed." -ForegroundColor Green
 
-# ── Done ──────────────────────────────────────────────────
+# -- Done ------------------------------------------------------------------
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "   Installation complete!" -ForegroundColor Green
@@ -95,5 +95,5 @@ Write-Host ""
 Write-Host "To run the app:" -ForegroundColor Cyan
 Write-Host "  1. Activate venv:     .\.venv\Scripts\Activate.ps1"
 Write-Host "  2. Start backend:     python app.py"
-Write-Host "  3. Start frontend:    npm run dev  (optional)"
+Write-Host "  3. Start frontend:    npm run dev (optional)"
 Write-Host ""
