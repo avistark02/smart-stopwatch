@@ -12,6 +12,7 @@ import argparse
 import time
 import logging
 import os
+import numpy as np
 
 from storage import (
     load_known_faces, save_known_faces, load_authorized_users,
@@ -200,7 +201,6 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str
         logger.error("face_recognition package required.")
         return False, "face_recognition package required"
 
-    import numpy as np
     name = normalize_name(name)
     cv2 = _get_cv2()
     cap = cv2.VideoCapture(0)
@@ -212,8 +212,18 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str
     try:
         while time.time() - start < timeout:
             ret, frame = cap.read()
-            if not ret:
+            if not ret or frame is None:
                 continue
+
+            # Ensure frame is a valid 8-bit BGR image before conversion
+            # Some webcams (especially laptops) return RGBA (4-channel) or 16-bit frames
+            import numpy as np
+            if frame.dtype != np.uint8:
+                frame = (frame / frame.max() * 255).astype(np.uint8) if frame.max() > 0 else frame.astype(np.uint8)
+            if len(frame.shape) == 2:  # Grayscale -> BGR
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            elif frame.shape[2] == 4:  # RGBA/BGRA -> BGR
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             locations = face_recognition.face_locations(rgb, model="hog")
@@ -369,6 +379,15 @@ def run_detection(poll_interval: float = POLL_INTERVAL, match_encoding=None) -> 
 
             status = "inactive"
             who: Optional[str] = None
+
+            # Ensure frame is valid 8-bit BGR before processing
+            if frame.dtype != np.uint8:
+                frame = (frame / frame.max() * 255).astype(np.uint8) if frame.max() > 0 else frame.astype(np.uint8)
+            if len(frame.shape) == 2:
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            elif frame.shape[2] == 4:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             face_locations = []
             face_encodings_list = []
