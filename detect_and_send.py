@@ -192,11 +192,7 @@ def enroll_from_image(name: str, image_path: str) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 
 def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str]:
-    """Enroll via webcam. Collects 5 samples and averages them for accuracy.
-
-    Returns:
-        (success: bool, message: str)
-    """
+    """Enroll via webcam. Collects 5 samples and averages them for accuracy."""
     if not USE_FACE_RECOG:
         logger.error("face_recognition package required.")
         return False, "face_recognition package required"
@@ -204,6 +200,11 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str
     name = normalize_name(name)
     cv2 = _get_cv2()
     cap = cv2.VideoCapture(0)
+    
+    # Drain stale frames
+    for _ in range(10):
+        cap.read()
+
     start = time.time()
     REQUIRED_SAMPLES = 5
     collected = []
@@ -215,34 +216,29 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str
             if not ret or frame is None:
                 continue
 
-            # Ensure frame is a valid 8-bit BGR image before conversion
-            # Some webcams (especially laptops) return RGBA (4-channel) or 16-bit frames
-            import numpy as np
             if frame.dtype != np.uint8:
                 frame = (frame / frame.max() * 255).astype(np.uint8) if frame.max() > 0 else frame.astype(np.uint8)
-            if len(frame.shape) == 2:  # Grayscale -> BGR
+            if len(frame.shape) == 2:
                 frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-            elif frame.shape[2] == 4:  # RGBA/BGRA -> BGR
+            elif frame.shape[2] == 4:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             locations = face_recognition.face_locations(rgb, model="hog")
+            
+            time_left = int(timeout - (time.time() - start))
             progress = f"{len(collected)}/{REQUIRED_SAMPLES}"
 
             if len(locations) == 0:
-                cv2.putText(frame, "No face detected", (10, 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                cv2.putText(frame, "Look at the camera", (10, 70),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(frame, "No face detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             elif len(locations) > 1:
-                cv2.putText(frame, "Multiple faces — one person only", (10, 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                cv2.putText(frame, "Multiple faces detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
             else:
                 top, right, bottom, left = locations[0]
                 width = right - left
                 height = bottom - top
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                cv2.putText(frame, f"Samples: {progress}", (10, 30),
+                cv2.putText(frame, f"Samples: {progress} | Time: {time_left}s", (10, 30),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
 
                 if width < FACE_MIN_WIDTH or height < FACE_MIN_WIDTH:
@@ -254,46 +250,49 @@ def enroll_face(name: str, timeout: int = ENROLLMENT_TIMEOUT) -> tuple[bool, str
                 else:
                     cv2.putText(frame, "Hold still...", (10, 70),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-                    encs = face_recognition.face_encodings(rgb, locations, num_jitters=5)
-                    if encs:
-                        collected.append(encs[0])
-                        logger.debug(f"Sample {len(collected)} captured")
+                    try:
+                        # num_jitters=1 per sample for speed; final encoding averages 5 samples
+                        encs = face_recognition.face_encodings(rgb, locations, num_jitters=1)
+                        if encs:
+                            collected.append(encs[0])
+                            logger.debug(f"Sample {len(collected)} captured")
+                    except Exception as e:
+                        logger.warning(f"Encoding error (skipping sample): {e}")
 
-                    if len(collected) >= REQUIRED_SAMPLES:
-                        final_encoding = np.mean(collected, axis=0)
+                if len(collected) >= REQUIRED_SAMPLES:
+                    final_encoding = np.mean(collected, axis=0)
+                    detected_as = check_if_face_already_enrolled(final_encoding)
 
-                        # Check if this face is already enrolled
-                        detected_as = check_if_face_already_enrolled(final_encoding)
-                        if detected_as:
-                            if detected_as == name:
-                                msg = f"'{name}' is already enrolled. Re-enrollment will update their face data."
-                                cv2.putText(frame, "Already enrolled! Updating...", (10, 120),
-                                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 165, 255), 2)
-                                cv2.imshow("Enroll", frame)
-                                cv2.waitKey(2000)
-                                set_face_encoding(name, final_encoding)
-                                logger.info(f"Re-enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
-                                return True, msg
-                            else:
-                                msg = f"This face is already enrolled as '{detected_as}', not '{name}'"
-                                cv2.putText(frame, f"Already enrolled as: {detected_as}", (10, 120),
-                                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-                                cv2.imshow("Enroll", frame)
-                                cv2.waitKey(2000)
-                                logger.warning(msg)
-                                return False, msg
+                    if detected_as:
+                        if detected_as == name:
+                            msg = f"'{name}' is already enrolled. Updating face data."
+                            cv2.putText(frame, "Already enrolled! Updating...", (10, 120),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 165, 255), 2)
+                            cv2.imshow("Enroll", frame)
+                            cv2.waitKey(2000)
+                            set_face_encoding(name, final_encoding)
+                            logger.info(f"Re-enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
+                            return True, msg
+                        else:
+                            msg = f"This face is already enrolled as '{detected_as}', not '{name}'"
+                            cv2.putText(frame, f"Already enrolled as: {detected_as}", (10, 120),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                            cv2.imshow("Enroll", frame)
+                            cv2.waitKey(2000)
+                            logger.warning(msg)
+                            return False, msg
 
-                        set_face_encoding(name, final_encoding)
-                        add_authorized_user(name)
-                        cv2.putText(frame, "Enrolled successfully!", (10, 120),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                        cv2.imshow("Enroll", frame)
-                        cv2.waitKey(2000)
-                        msg = f"'{name}' enrolled successfully"
-                        logger.info(f"Enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
-                        return True, msg
+                    set_face_encoding(name, final_encoding)
+                    add_authorized_user(name)
+                    cv2.putText(frame, "Enrolled successfully!", (10, 120),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    cv2.imshow("Enroll", frame)
+                    cv2.waitKey(2000)
+                    msg = f"'{name}' enrolled successfully"
+                    logger.info(f"Enrolled '{name}' from {REQUIRED_SAMPLES} webcam samples")
+                    return True, msg
 
-            cv2.putText(frame, "Press Q to cancel", (10, frame.shape[0] - 10),
+            cv2.putText(frame, f"Time: {time_left}s | Press Q to cancel", (10, frame.shape[0] - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
             cv2.imshow("Enroll", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):

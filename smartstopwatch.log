@@ -5425,3 +5425,483 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid 
 2026-04-04 08:33:17,645 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:33:17] "GET /status/123 HTTP/1.1" 200 -
 2026-04-04 08:33:18,229 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:33:18] "GET /status/123 HTTP/1.1" 200 -
 2026-04-04 08:33:18,643 - werkzeug - INFO - 127.0.0.1 - - [04/Apr/2026 08:33:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:52:58,514 - __main__ - INFO - Monitor thread started
+2026-04-06 18:52:58,515 - root - INFO - Starting Flask app...
+2026-04-06 18:52:58,612 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.94.249.216:5000
+2026-04-06 18:52:58,612 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-06 18:52:58,623 - __main__ - INFO - cv2 imported OK
+2026-04-06 18:52:58,624 - __main__ - INFO - face_recognition imported OK
+2026-04-06 18:52:59,624 - __main__ - INFO - Attempting to open camera...
+2026-04-06 18:52:59,894 - root - INFO - Browser launched.
+2026-04-06 18:53:00,119 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "GET / HTTP/1.1" 200 -
+2026-04-06 18:53:00,314 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2026-04-06 18:53:00,315 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "GET /static/script.js HTTP/1.1" 200 -
+2026-04-06 18:53:00,494 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-06 18:53:00,503 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-06 18:53:00,504 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "GET /selected-user HTTP/1.1" 200 -
+2026-04-06 18:53:00,509 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-04-06 18:53:00,510 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:00] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-06 18:53:01,470 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:01] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:02,467 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:02] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:03,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:03] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:04,484 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:05,483 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:06,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:06,564 - __main__ - INFO - Camera opened successfully
+2026-04-06 18:53:07,486 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:08,468 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:09,486 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:10,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:10] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:11,465 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:12,466 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:13,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:14,479 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:15,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:15,946 - detect_and_send - INFO - Webcam enrollment for 'avinash', timeout=30s
+2026-04-06 18:53:16,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:16] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:17,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:17,628 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 18:53:17,714 - __main__ - INFO - Camera released
+2026-04-06 18:53:18,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:18,716 - __main__ - INFO - Attempting to open camera...
+2026-04-06 18:53:19,529 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:19] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:20,486 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:21,465 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:21] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:22,478 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:22] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:23,327 - __main__ - INFO - Camera opened successfully
+2026-04-06 18:53:23,497 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:23] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:24,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:25,529 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:26,518 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:27,496 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:28,511 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:29,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:30,492 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:31,490 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:31] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:32,478 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:33,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:34,489 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:35,483 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:36,478 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:37,510 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:38,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:39,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:40,510 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:40] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:41,475 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:41] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:42,475 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:42] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:43,487 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:43] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:44,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:44] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:45,474 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:45] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:46,036 - detect_and_send - WARNING - Enrollment timed out or cancelled
+2026-04-06 18:53:46,055 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:46] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 18:53:48,167 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:48,472 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:49,470 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:50,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:50] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:51,473 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:51] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:52,470 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:53,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:54,485 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:54] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:55,485 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:55] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:56,474 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:57,484 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:57] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:58,482 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:58] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:53:59,476 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:53:59] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:00,485 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:00] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:01,484 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:01] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:02,468 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:02] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:03,474 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:03] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:04,484 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:05,475 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:06,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:07,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:08,466 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:09,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:10,474 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:10] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:10,671 - detect_and_send - INFO - Webcam enrollment for 'aviansh', timeout=30s
+2026-04-06 18:54:11,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:12,012 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 18:54:12,046 - __main__ - INFO - Camera released
+2026-04-06 18:54:12,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:13,064 - __main__ - INFO - Attempting to open camera...
+2026-04-06 18:54:13,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:14,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:15,479 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:16,496 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:16] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:17,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:20,439 - __main__ - INFO - Camera opened successfully
+2026-04-06 18:54:20,445 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:20,546 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:20,561 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:24,027 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:24,045 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:24,076 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:24,492 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:25,508 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:26,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:27,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:28,490 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:29,506 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:30,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:31,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:31] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:32,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:33,505 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:34,490 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:35,507 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:36,506 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:37,478 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:38,487 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:39,498 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:40,484 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:40] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:40,803 - detect_and_send - WARNING - Enrollment timed out or cancelled
+2026-04-06 18:54:40,804 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:40] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 18:54:43,488 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:43] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:44,471 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:44] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:45,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:45] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:46,494 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:46] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:47,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:47] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:48,468 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:49,484 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:50,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:50] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:51,482 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:51] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:52,482 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:53,474 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:54,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:54] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:55,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:55] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:56,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:57,466 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:57] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:57,971 - detect_and_send - INFO - Webcam enrollment for 'aviansh', timeout=30s
+2026-04-06 18:54:58,479 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:58] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:58,796 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 18:54:58,831 - __main__ - INFO - Camera released
+2026-04-06 18:54:59,466 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:54:59] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:54:59,847 - __main__ - INFO - Attempting to open camera...
+2026-04-06 18:55:00,498 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:00] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:01,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:01] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:05,328 - __main__ - INFO - Camera opened successfully
+2026-04-06 18:55:05,331 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:05,393 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:05,446 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:05,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:06,509 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:07,513 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:08,508 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:09,528 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:10,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:10] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:11,493 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:12,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:13,494 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:14,517 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:15,527 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:16,492 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:16] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:17,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:18,492 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:19,493 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:19] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:20,509 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:21,492 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:21] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:22,521 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:22] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:23,527 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:23] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:24,486 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:25,489 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:26,487 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:27,493 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:28,069 - detect_and_send - WARNING - Enrollment timed out or cancelled
+2026-04-06 18:55:28,089 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:28] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 18:55:30,935 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:31,470 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:31] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:32,485 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:33,471 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:34,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:35,470 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:36,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:37,477 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:38,469 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:39,483 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:40,483 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:40] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:41,468 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:41] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:42,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:42] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:43,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:43] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:44,479 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:44] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:45,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:45] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:45,494 - detect_and_send - INFO - Webcam enrollment for 'avinash', timeout=30s
+2026-04-06 18:55:46,277 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 18:55:46,326 - __main__ - INFO - Camera released
+2026-04-06 18:55:46,481 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:46] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:47,378 - __main__ - INFO - Attempting to open camera...
+2026-04-06 18:55:47,581 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:47] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:48,496 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:49,480 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:52,881 - __main__ - INFO - Camera opened successfully
+2026-04-06 18:55:52,886 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:52,972 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:52,987 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:56,146 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:56,161 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:56,186 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:56,494 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:57,540 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:57] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:58,485 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:58] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:55:59,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:55:59] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:00,493 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:00] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:01,511 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:01] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:02,495 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:02] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:03,494 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:03] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:04,494 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:05,525 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:06,482 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:07,493 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:08,491 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:09,482 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:10,524 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:10] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:11,508 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:12,539 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:13,505 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:14,502 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:15,517 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:15,622 - detect_and_send - WARNING - Enrollment timed out or cancelled
+2026-04-06 18:56:15,657 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:15] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 18:56:17,715 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:18,472 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 18:56:19,486 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 18:56:19] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:09,974 - __main__ - INFO - Monitor thread started
+2026-04-06 19:01:09,974 - root - INFO - Starting Flask app...
+2026-04-06 19:01:10,011 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.94.249.216:5000
+2026-04-06 19:01:10,011 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-06 19:01:10,019 - __main__ - INFO - cv2 imported OK
+2026-04-06 19:01:10,019 - __main__ - INFO - face_recognition imported OK
+2026-04-06 19:01:11,020 - __main__ - INFO - Attempting to open camera...
+2026-04-06 19:01:11,287 - root - INFO - Browser launched.
+2026-04-06 19:01:11,455 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:11] "GET / HTTP/1.1" 200 -
+2026-04-06 19:01:11,618 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:11] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2026-04-06 19:01:11,620 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:11] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2026-04-06 19:01:11,766 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-06 19:01:11,770 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:11] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-06 19:01:11,772 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:11] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-06 19:01:11,774 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:11] "GET /selected-user HTTP/1.1" 200 -
+2026-04-06 19:01:12,738 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:13,749 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:14,750 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:15,751 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:16,749 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:16] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:17,756 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:18,751 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:19,171 - __main__ - INFO - Camera opened successfully
+2026-04-06 19:01:19,753 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:19] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:20,747 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:21,750 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:21] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:22,750 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:22] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:23,749 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:23] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:24,748 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:25,746 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:26,748 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:27,748 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:28,747 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:29,744 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:30,750 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:31,025 - detect_and_send - INFO - Webcam enrollment for 'avinash', timeout=30s
+2026-04-06 19:01:32,950 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:33,015 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:33,511 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 19:01:33,580 - __main__ - INFO - Camera released
+2026-04-06 19:01:33,797 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:34,661 - __main__ - INFO - Attempting to open camera...
+2026-04-06 19:01:34,747 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:35,745 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:36,745 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:37,745 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:38,744 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:39,159 - __main__ - INFO - Camera opened successfully
+2026-04-06 19:01:39,746 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:40,762 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:40] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:41,760 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:41] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:42,763 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:42] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:43,745 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:43] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:44,751 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:44] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:45,757 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:45] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:46,753 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:46] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:47,756 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:47] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:48,743 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:49,742 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:50,772 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:50] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:51,753 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:51] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:52,742 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:53,755 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:54,754 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:54] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:55,748 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:55] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:56,774 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:57,774 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:57] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:58,754 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:58] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:01:59,757 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:01:59] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:00,740 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:00] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:01,118 - detect_and_send - WARNING - Enrollment timed out or cancelled
+2026-04-06 19:02:01,121 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:01] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 19:02:04,438 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:04,737 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:05,737 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:06,787 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:07,746 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:08,753 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:09,751 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:10,740 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:10] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:11,744 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:12,737 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:13,754 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:14,750 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:15,752 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:15,885 - detect_and_send - INFO - Webcam enrollment for 'fsfs', timeout=30s
+2026-04-06 19:02:16,351 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 19:02:17,465 - __main__ - INFO - Camera released
+2026-04-06 19:02:17,467 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:17,760 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:18,923 - __main__ - INFO - Attempting to open camera...
+2026-04-06 19:02:18,934 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:19,882 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:19] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:20,798 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:21,749 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:21] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:22,747 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:22] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:23,351 - __main__ - INFO - Camera opened successfully
+2026-04-06 19:02:23,748 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:23] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:23,748 - detect_and_send - WARNING - This face is already enrolled as 'testuser', not 'fsfs'
+2026-04-06 19:02:23,882 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:23] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 19:02:27,434 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:27,764 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:28,746 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:29,745 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:30,746 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:31,744 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:31] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:32,743 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:33,742 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:34,743 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:35,743 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:36,742 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:43,387 - __main__ - INFO - Monitor thread started
+2026-04-06 19:02:43,388 - root - INFO - Starting Flask app...
+2026-04-06 19:02:43,424 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.94.249.216:5000
+2026-04-06 19:02:43,424 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-06 19:02:43,429 - __main__ - INFO - cv2 imported OK
+2026-04-06 19:02:43,429 - __main__ - INFO - face_recognition imported OK
+2026-04-06 19:02:44,430 - __main__ - INFO - Attempting to open camera...
+2026-04-06 19:02:44,728 - root - INFO - Browser launched.
+2026-04-06 19:02:44,897 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:44] "GET / HTTP/1.1" 200 -
+2026-04-06 19:02:45,138 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:45] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2026-04-06 19:02:45,152 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:45] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2026-04-06 19:02:45,301 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 311, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 57, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-06 19:02:45,304 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:45] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-06 19:02:45,304 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:45] "GET /selected-user HTTP/1.1" 200 -
+2026-04-06 19:02:45,318 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:45] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-06 19:02:46,277 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:46] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:47,284 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:47] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:48,286 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:49,287 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:50,285 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:50] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:51,287 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:51] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:51,454 - __main__ - INFO - Camera opened successfully
+2026-04-06 19:02:52,286 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:53,287 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:54,284 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:54] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:55,284 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:55] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:56,285 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:57,284 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:57] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:58,283 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:58] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:02:59,283 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:02:59] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:00,229 - detect_and_send - INFO - Webcam enrollment for 'sdfgsdg', timeout=30s
+2026-04-06 19:03:00,283 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:00] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:00,885 - __main__ - WARNING - Failed to read frame, reconnecting
+2026-04-06 19:03:00,911 - __main__ - INFO - Camera released
+2026-04-06 19:03:01,285 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:01] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:01,915 - __main__ - INFO - Attempting to open camera...
+2026-04-06 19:03:02,282 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:02] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:03,285 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:03] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:04,432 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:05,749 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:06,282 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:07,017 - __main__ - INFO - Camera opened successfully
+2026-04-06 19:03:07,281 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:08,701 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:09,282 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:10,283 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:10] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:10,717 - detect_and_send - WARNING - This face is already enrolled as 'testuser', not 'sdfgsdg'
+2026-04-06 19:03:10,816 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:10] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-06 19:03:13,861 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-06 19:03:14,282 - werkzeug - INFO - 127.0.0.1 - - [06/Apr/2026 19:03:14] "GET /status/123 HTTP/1.1" 200 -
