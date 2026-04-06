@@ -1,0 +1,72 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# =========================
+# Virtual Environments
+# =========================
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Environment Variables & Secrets
+# =========================
+.env
+.env.local
+.env.*.local
+secrets.json
+config.secret.*
+
+# =========================
+# IDE & Editor Files
+# =========================
+.idea/
+.vscode/
+*.suo
+*.user
+*.swp
+*.swo
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs & Temp Files
+# =========================
+*.log
+*.tmp
+*.temp
+
+# =========================
+# Project-Specific Runtime Files
+# =========================
+status.json
+session_log.json
+session_log.json.txt
+
+# =========================
+# Biometric / Sensitive Data
+# =========================
+known_faces.pkl
+authorized_users.json
+enrolled_thumbnails/
+
+# =========================
+# PyInstaller Build Specs
+# =========================
+*.spec
