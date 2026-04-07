@@ -7311,3 +7311,135 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid 
 2026-04-07 08:35:04,482 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 08:35:04] "GET /status/123 HTTP/1.1" 200 -
 2026-04-07 08:35:05,448 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 08:35:05] "GET /status/123 HTTP/1.1" 200 -
 2026-04-07 08:35:06,368 - __main__ - INFO - Camera opened successfully
+2026-04-07 21:00:18,451 - __main__ - INFO - Monitor thread started
+2026-04-07 21:00:18,451 - root - INFO - Starting Flask app...
+2026-04-07 21:00:18,597 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.94.249.216:5000
+2026-04-07 21:00:18,597 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-07 21:00:18,613 - __main__ - INFO - cv2 imported OK
+2026-04-07 21:00:18,613 - __main__ - INFO - face_recognition imported OK
+2026-04-07 21:00:19,614 - __main__ - INFO - Attempting to open camera...
+2026-04-07 21:00:19,849 - root - INFO - Browser launched.
+2026-04-07 21:00:20,206 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "GET / HTTP/1.1" 200 -
+2026-04-07 21:00:20,394 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2026-04-07 21:00:20,395 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2026-04-07 21:00:20,614 - app - ERROR - Exception on /session-log [GET]
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\smart-stopwatch\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 320, in get_session_log
+    return jsonify(load_json(SESSION_LOG_FILE))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "c:\Users\HP\Desktop\smart-stopwatch\app.py", line 58, in load_json
+    return json.load(f)
+           ~~~~~~~~~^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2026-04-07 21:00:20,617 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "GET /authorized-users HTTP/1.1" 200 -
+2026-04-07 21:00:20,621 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "GET /selected-user HTTP/1.1" 200 -
+2026-04-07 21:00:20,623 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-04-07 21:00:20,624 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:20] "[35m[1mGET /session-log HTTP/1.1[0m" 500 -
+2026-04-07 21:00:21,441 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:21] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:22,423 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:22] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:23,440 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:23] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:24,438 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:25,427 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:26,435 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:27,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:28,314 - __main__ - INFO - Camera opened successfully
+2026-04-07 21:00:28,438 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:29,435 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:30,439 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:31,435 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:31] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:32,435 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:32] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:33,423 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:33] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:34,388 - __main__ - INFO - Enrollment active, pausing monitor camera.
+2026-04-07 21:00:34,438 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:34] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:34,737 - __main__ - INFO - Camera released
+2026-04-07 21:00:35,435 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:35] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:36,432 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:36] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:37,422 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:37] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:38,433 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:38] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:39,423 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:39] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:40,432 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:40] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:41,431 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:41] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:42,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:42] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:43,433 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:43] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:44,432 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:44] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:45,431 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:45] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:46,431 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:46] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:47,431 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:47] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:48,431 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:48] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:49,430 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:49] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:50,430 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:50] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:51,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:51] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:52,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:52] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:53,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:53] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:54,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:54] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:55,427 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:55] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:56,428 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:56] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:57,427 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:57] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:58,428 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:58] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:00:59,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:00:59] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:00,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:00] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:01,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:01] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:02,425 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:02] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:02,892 - detect_and_send - INFO - Camera 0 opened via MSMF (default backend)
+2026-04-07 21:01:03,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:03] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:03,612 - detect_and_send - INFO - Waiting for camera to produce a clean frame...
+2026-04-07 21:01:03,645 - detect_and_send - INFO - Camera ready (clean frame received)
+2026-04-07 21:01:03,645 - detect_and_send - INFO - Webcam enrollment for 'avinash', timeout=30s (active face time)
+2026-04-07 21:01:04,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:04] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:05,440 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:05] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:06,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:06] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:07,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:07] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:08,426 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:08] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:09,441 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:09] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:11,153 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:11,439 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:11] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:12,439 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:12] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:13,555 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:13] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:14,773 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:14] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:15,955 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:15] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:15,957 - detect_and_send - WARNING - Face already enrolled as 'testuser' — cannot enroll as 'avinash'
+2026-04-07 21:01:16,440 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:16] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:17,452 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:17] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:18,441 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:18] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:18,889 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:18] "[31m[1mPOST /enroll HTTP/1.1[0m" 400 -
+2026-04-07 21:01:19,955 - __main__ - INFO - Attempting to open camera...
+2026-04-07 21:01:20,515 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:20] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:21,437 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:21] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:22,423 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:22] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:23,435 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:23] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:24,429 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:24] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:25,424 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:25] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:26,432 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:26] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:27,431 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:27] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:28,349 - __main__ - INFO - Camera opened successfully
+2026-04-07 21:01:28,433 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:28] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:29,434 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:29] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:30,422 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2026 21:01:30] "GET /status/123 HTTP/1.1" 200 -
+2026-04-07 21:01:40,339 - __main__ - INFO - Monitor thread started
+2026-04-07 21:01:40,339 - root - INFO - Starting Flask app...
+2026-04-07 21:01:40,375 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.94.249.216:5000
+2026-04-07 21:01:40,376 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-07 21:01:40,384 - __main__ - INFO - cv2 imported OK
+2026-04-07 21:01:40,384 - __main__ - INFO - face_recognition imported OK
