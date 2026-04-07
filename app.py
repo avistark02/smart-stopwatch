@@ -44,6 +44,7 @@ session_lock = threading.Lock()
 status = {"Presence": "inactive", "who": None}
 selected_person = None
 selected_person_lock = threading.Lock()
+enrollment_active_event = threading.Event()
 
 session_tracker = {}
 
@@ -135,6 +136,10 @@ def monitor_proximity():
     retry_count = 0
 
     while True:
+        if enrollment_active_event.is_set():
+            time.sleep(0.5)
+            continue
+
         cap = None
         try:
             time.sleep(1)
@@ -160,6 +165,10 @@ def monitor_proximity():
             last_detected = 0
 
             while True:
+                if enrollment_active_event.is_set():
+                    logger.info("Enrollment active, pausing monitor camera.")
+                    break
+
                 ret, frame = cap.read()
                 if not ret or frame is None:
                     logger.warning("Failed to read frame, reconnecting")
@@ -330,11 +339,17 @@ def api_enroll():
     name = normalize_name(data.get("name") or "")
     if not name:
         return jsonify({"success": False, "message": "Name is required"}), 400
+        
+    enrollment_active_event.set()
+    time.sleep(1.0)  # Give monitor thread time to detect event and release camera
     try:
         success, message = enroll_face(name, timeout=30)
     except Exception as e:
         logger.error(f"Enrollment error for {name}: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        enrollment_active_event.clear()
+        
     if not success:
         return jsonify({"success": False, "message": message}), 400
     logger.info(f"Successfully enrolled: {name}")
