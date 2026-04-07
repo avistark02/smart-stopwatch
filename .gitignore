@@ -70,3 +70,5 @@ enrolled_thumbnails/
 # PyInstaller Build Specs
 # =========================
 *.spec
+
+secret.key
