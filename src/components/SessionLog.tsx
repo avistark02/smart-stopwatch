@@ -27,7 +27,7 @@ export default function SessionLog() {
   const clearSessions = async () => {
     if (!confirm('Clear all session logs?')) return;
     try {
-      await fetch('http://localhost:5000/delete-log', { method: 'POST' });
+      await fetch('http://localhost:5000/session-log', { method: 'DELETE' });
       setSessions([]);
     } catch (err) {
       console.error('Failed to clear logs:', err);

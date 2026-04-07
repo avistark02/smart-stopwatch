@@ -7443,3 +7443,6 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid 
 2026-04-07 21:01:40,376 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
 2026-04-07 21:01:40,384 - __main__ - INFO - cv2 imported OK
 2026-04-07 21:01:40,384 - __main__ - INFO - face_recognition imported OK
+2026-04-07 22:00:30,950 - storage - INFO - Saved face encoding for: dummy_user
+2026-04-07 22:00:30,954 - storage - INFO - Added authorized user: dummy_user
+2026-04-07 22:00:30,955 - detect_and_send - INFO - Enrolled 'dummy_user' from image: C:\Users\HP\.gemini\antigravity\brain\cdc0797e-8f46-444e-8673-6628880a4278\test_user_face_1775578906350.png

@@ -61,7 +61,7 @@ export default function UserManagement({ selectedPerson, onPersonSelected }: Pro
     if (!confirm(`Remove ${name} from authorized users?`)) return;
     try {
       const res = await fetch('http://localhost:5000/remove-user', {
-        method: 'POST',
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       });

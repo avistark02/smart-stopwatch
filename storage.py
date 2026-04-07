@@ -6,6 +6,18 @@ import pickle
 import json
 import logging
 from typing import Any, Dict, List, Optional
+from cryptography.fernet import Fernet
+
+SECRET_KEY_FILE = "secret.key"
+
+def get_fernet() -> Fernet:
+    if not os.path.exists(SECRET_KEY_FILE):
+        key = Fernet.generate_key()
+        with open(SECRET_KEY_FILE, "wb") as f:
+            f.write(key)
+    with open(SECRET_KEY_FILE, "rb") as f:
+        key = f.read()
+    return Fernet(key)
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +108,14 @@ def load_known_faces() -> Dict[str, Any]:
     """
     try:
         with open(KNOWN_FACES_FILE, "rb") as f:
-            data = pickle.load(f)
+            file_data = f.read()
+            fernet = get_fernet()
+            try:
+                decrypted_data = fernet.decrypt(file_data)
+                data = pickle.loads(decrypted_data)
+            except Exception:
+                # Fallback to unencrypted pickle for backward compatibility
+                data = pickle.loads(file_data)
             # Normalize all keys on load to handle legacy data
             return {normalize_name(k): v for k, v in data.items()} if data else {}
     except FileNotFoundError:
@@ -114,8 +133,11 @@ def save_known_faces(data: Dict[str, Any]) -> None:
         data: Dictionary mapping names to face encoding arrays.
     """
     try:
+        fernet = get_fernet()
+        pickled_data = pickle.dumps(data)
+        encrypted_data = fernet.encrypt(pickled_data)
         with open(KNOWN_FACES_FILE, "wb") as f:
-            pickle.dump(data, f)
+            f.write(encrypted_data)
         logger.debug(f"Saved {len(data)} known faces to {KNOWN_FACES_FILE}")
     except Exception as e:
         logger.error(f"Failed to save known faces: {e}")

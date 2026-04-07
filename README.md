@@ -64,11 +64,13 @@ python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 ```
 
-> **Heads up for Windows users:** `dlib` (a dependency of `face_recognition`) can be a pain to install on Windows. If `pip install` fails with compiler errors, the easiest fix is using Conda:
+> **Heads up for Windows users:** `dlib` (a dependency of `face_recognition`) can be a pain to install on Windows. If `pip install` fails with compiler errors:
+> 1. **Prebuilt Wheel**: Search for `dlib python 3.y wheel` on GitHub and run `pip install dlib-...whl`.
+> 2. **Conda**: 
 > ```
 > conda create -n fr python=3.10 -c conda-forge dlib face_recognition
 > ```
-> Alternatively, grab a prebuilt `dlib` wheel for your Python version and install that first.
+> 3. **Docker**: If local builds fail entirely, use Docker with WSL2 to leverage standard `apt-get install cmake gcc` pipelines.
 
 ### 3. Run the backend
 
@@ -106,16 +108,16 @@ SENSOR_ID = "123"        # Sensor identifier
 
 | Method | Endpoint | What it does |
 |---|---|---|
-| `GET` | `/status` | Current presence status |
+| `GET` | `/status/<sensor_id>` | Current presence status |
 | `POST` | `/status` | Update status from a sensor |
 | `GET` | `/authorized-users` | List of enrolled users |
 | `POST` | `/enroll` | Enroll someone via webcam |
 | `POST` | `/enroll-photo` | Enroll someone via photo |
-| `POST` | `/remove-user` | Remove an enrolled user |
+| `DELETE` | `/remove-user` | Remove an enrolled user |
 | `POST` | `/select-user` | Set who to monitor |
 | `GET` | `/selected-user` | Who is currently being monitored |
 | `GET` | `/session-log` | Full session history |
-| `POST` | `/delete-log` | Clear the session log |
+| `DELETE` | `/session-log` | Clear the session log |
 
 ---
 
@@ -123,12 +125,15 @@ SENSOR_ID = "123"        # Sensor identifier
 
 These files are intentionally excluded from the repo via `.gitignore`:
 
-- `known_faces.pkl` — stores biometric face encodings, shouldn't be public
+- `known_faces.pkl` — stores biometric face encodings (Encrypted on disk via Fernet)
+- `secret.key` — local encryption key to unlock biometric data
 - `authorized_users.json` — enrolled user list
 - `enrolled_thumbnails/` — face images
 - `*.log` — app logs
 
 If you fork this, make sure you don't accidentally commit any of these.
+
+For production use: Consider adding an authentication token to the API endpoints to prevent sweeping. Be sure to establish a log backup and retention policy so `session_log.json` and `smartstopwatch.log` don't grow infinitely over time. Ensure `secret.key` is generated safely and stored securely, never committed to git!
 
 ---
 

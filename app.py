@@ -37,7 +37,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}})
 
 status_lock = threading.Lock()
 session_lock = threading.Lock()
@@ -61,8 +61,11 @@ def load_json(path):
 
 
 def save_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
+    dir_name = os.path.dirname(os.path.abspath(path))
+    fd, temp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
+    os.replace(temp_path, path)
 
 
 def log_session(sensor_id, start, end):
@@ -320,7 +323,7 @@ def get_session_log():
     return jsonify(load_json(SESSION_LOG_FILE))
 
 
-@app.route("/delete-log", methods=["POST"])
+@app.route("/session-log", methods=["DELETE"])
 def delete_session_log():
     save_json(SESSION_LOG_FILE, [])
     logging.info("Session log cleared.")
@@ -402,7 +405,7 @@ def api_enroll_photo():
     return jsonify({"success": True, "message": message})
 
 
-@app.route("/remove-user", methods=["POST"])
+@app.route("/remove-user", methods=["DELETE"])
 def remove_user():
     data = request.json
     name = normalize_name(data.get("name") or "")

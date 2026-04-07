@@ -64,7 +64,7 @@ Connects to Flask backend endpoints:
 - `POST /enroll-photo` - Enroll via photo upload
 - `DELETE /remove-user` - Remove user
 - `GET /session-log` - Get session history
-- `DELETE /delete-log` - Clear session log
+- `DELETE /session-log` - Clear session log
 
 ## Theme
 
