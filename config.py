@@ -1,4 +1,4 @@
-"""Configuration settings for Smart Stopwatch application."""
+"""Configuration settings for Blinq : Presence time calculator using python and open cv application."""
 
 import os
 
@@ -39,4 +39,4 @@ ENROLLMENT_FACE_SIZE_MAX = (350, 350)
 
 # Logging
 LOG_LEVEL = "INFO"
-LOG_FILE = os.path.join(_ROOT, "smartstopwatch.log")
+LOG_FILE = os.path.join(_ROOT, "blinq.log")

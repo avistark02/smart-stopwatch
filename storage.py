@@ -1,4 +1,4 @@
-"""Centralized file storage operations for Smart Stopwatch."""
+"""Centralized file storage operations for Blinq : Presence time calculator using python and open cv."""
 
 import os
 import re

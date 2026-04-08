@@ -687,7 +687,7 @@ def run_detection(poll_interval: float = POLL_INTERVAL, match_encoding=None) -> 
 
 def parse_args():
     p = argparse.ArgumentParser(
-        description="Smart Stopwatch face detection",
+        description="Blinq : Presence time calculator using python and open cv face detection",
         formatter_class=argparse.RawTextHelpFormatter,
         epilog="""
 Examples:

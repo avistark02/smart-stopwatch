@@ -1,4 +1,4 @@
-# Smart Stopwatch
+# Blinq : Presence time calculator using python and open cv
 
 I built this because I wanted a smarter way to track time — one that doesn't rely on me remembering to start or stop a timer. The idea is simple: the app watches the camera, recognizes your face, and runs the stopwatch only while you're actually there. Walk away, it stops. Come back, it resumes.
 
@@ -133,7 +133,7 @@ These files are intentionally excluded from the repo via `.gitignore`:
 
 If you fork this, make sure you don't accidentally commit any of these.
 
-For production use: Consider adding an authentication token to the API endpoints to prevent sweeping. Be sure to establish a log backup and retention policy so `session_log.json` and `smartstopwatch.log` don't grow infinitely over time. Ensure `secret.key` is generated safely and stored securely, never committed to git!
+For production use: Consider adding an authentication token to the API endpoints to prevent sweeping. Be sure to establish a log backup and retention policy so `session_log.json` and `blinq.log` don't grow infinitely over time. Ensure `secret.key` is generated safely and stored securely, never committed to git!
 
 ---
 

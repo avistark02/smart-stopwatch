@@ -1,6 +1,6 @@
-# Smart Stopwatch - React UI
+# Blinq : Presence time calculator using python and open cv - React UI
 
-Modern, futuristic React frontend for the Smart Stopwatch presence detection system.
+Modern, futuristic React frontend for the Blinq : Presence time calculator using python and open cv presence detection system.
 
 ## Features
 

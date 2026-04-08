@@ -1,4 +1,4 @@
-# What You Need Before Running Smart Stopwatch
+# What You Need Before Running Blinq : Presence time calculator using python and open cv
 
 This folder contains a script that installs everything for you automatically.
 
