@@ -72,3 +72,8 @@ enrolled_thumbnails/
 *.spec
 
 secret.key
+
+# =========================
+# Documentation
+# =========================
+Project_Report.md
