@@ -1,12 +1,12 @@
 # ============================================================
-# Smart Stopwatch - Full Installation Script (Windows)
+# Blinq : Presence time calculator using python and open cv - Full Installation Script (Windows)
 # Run this from the project root folder:
 #   .\setup\install.ps1
 # ============================================================
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "   Smart Stopwatch - Setup Script" -ForegroundColor Cyan
+Write-Host "   Blinq : Presence time calculator using python and open cv - Setup Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
