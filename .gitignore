@@ -2,6 +2,7 @@
 # Python
 # =========================
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -51,6 +52,9 @@ desktop.ini
 *.log
 *.tmp
 *.temp
+ts_errors.*
+vite_error.*
+tsc_errors.*
 
 # =========================
 # Project-Specific Runtime Files
@@ -72,6 +76,7 @@ logs/
 secret.key
 download_models.js
 
+# Block all generated JSON except config files
 *.json
 !package.json
 !package-lock.json
@@ -100,6 +105,4 @@ Project_Report_Extended.pdf
 # Node.js & Vite
 # =========================
 node_modules/
-ts_errors.*
-vite_error.*
 *.tsbuildinfo

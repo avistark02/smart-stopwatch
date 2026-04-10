@@ -9,8 +9,7 @@ export function useFaceApi(selectedPerson: string | null) {
   const [knownDescriptors, setKnownDescriptors] = useState<Record<string, number[]>>({});
   
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const requestRef = useRef<number>(null);
+  const requestRef = useRef<number | null>(null);
   const lastSyncRef = useRef<number>(0);
 
   // Load models on mount
