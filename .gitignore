@@ -63,11 +63,15 @@ session_log.json.txt
 # Biometric / Sensitive Data & Generated JSON
 # =========================
 known_faces.pkl
+known_faces.json
 authorized_users.json
 enrolled_thumbnails/
 debug/
 sessions/
 logs/
+secret.key
+download_models.js
+
 *.json
 !package.json
 !package-lock.json
@@ -81,10 +85,8 @@ logs/
 # =========================
 *.spec
 
-secret.key
 .npmrc
 .pypirc
-debug/
 
 # =========================
 # Documentation

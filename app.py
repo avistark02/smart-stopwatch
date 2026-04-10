@@ -1,36 +1,22 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
 import json
 import os
-import webbrowser
-import threading
-import time
 import logging
-from werkzeug.utils import secure_filename
 import tempfile
-import cv2
-import numpy as np
 
-try:
-    import face_recognition
-    USE_FACE_RECOG = True
-except ImportError:
-    USE_FACE_RECOG = False
-
-from detect_and_send import enroll_from_image
 from storage import (
     load_authorized_users,
     load_known_faces,
     remove_authorized_user,
     normalize_name,
+    add_authorized_user,
+    set_face_encoding,
 )
 from config import (
-    BUFFER_TIME,
-    FACE_TOLERANCE,
     LOG_LEVEL,
     LOG_FILE,
-    DEBUG_DIR,
     SENSOR_ID,
     STATUS_FILE,
     SESSION_LOG_FILE,
@@ -39,26 +25,19 @@ from config import (
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()],
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:5000"]}})
+app = Flask(__name__)
+CORS(app)
 
-status_lock = threading.Lock()
-session_lock = threading.Lock()
 status = {"Presence": "inactive", "who": None}
-selected_person = None
-selected_person_lock = threading.Lock()
-
 session_tracker = {}
-last_detected = 0
 
 def load_json(path):
     if not os.path.exists(path):
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump([] if path == SESSION_LOG_FILE else {}, f)
+        return [] if path == SESSION_LOG_FILE else {}
     with open(path, encoding="utf-8") as f:
         try:
             return json.load(f)
@@ -67,6 +46,8 @@ def load_json(path):
 
 def save_json(path, data):
     dir_name = os.path.dirname(os.path.abspath(path))
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name, exist_ok=True)
     fd, temp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
@@ -83,14 +64,10 @@ def log_session(sensor_id, start, end):
     log = load_json(SESSION_LOG_FILE)
     log.append(entry)
     save_json(SESSION_LOG_FILE, log)
-    logger.info(f"Logged session: {entry}")
 
 def set_presence_status(presence: str, who: str = None):
-    """Update in-memory status, persist to status.json, and track session durations."""
     global status
-    with status_lock:
-        status = {"Presence": presence, "who": who}
-        logger.debug(f"Status updated: {status}")
+    status = {"Presence": presence, "who": who}
     try:
         data = load_json(STATUS_FILE)
         data[str(SENSOR_ID)] = {"Presence": presence, "who": who}
@@ -100,321 +77,70 @@ def set_presence_status(presence: str, who: str = None):
 
     now = datetime.now()
     sid = str(SENSOR_ID)
-    with session_lock:
-        if presence == "active":
-            if sid not in session_tracker:
-                session_tracker[sid] = now
-        elif presence in ("inactive", "error"):
-            if sid in session_tracker:
-                log_session(sid, session_tracker.pop(sid), now)
+    if presence == "active":
+        if sid not in session_tracker:
+            session_tracker[sid] = now
+    elif presence in ("inactive", "error"):
+        if sid in session_tracker:
+            log_session(sid, session_tracker.pop(sid), now)
 
-def get_selected_person() -> str:
-    with selected_person_lock:
-        return selected_person
+@app.route("/api/status", methods=["GET"])
+def get_all_status():
+    return jsonify(load_json(STATUS_FILE))
 
-def set_selected_person(person: str):
-    global selected_person
-    with selected_person_lock:
-        selected_person = person
-        logger.info(f"Selected person changed to: {person}")
-
-
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-@app.route("/status", methods=["GET"])
-def get_status():
-    with status_lock:
-        return jsonify(status)
-
-@app.route("/status", methods=["POST"])
-def post_sensor_status():
-    """External clients: JSON body with sensor keys or {id, Presence, who}."""
-    data = request.get_json(force=True) or {}
-    now = datetime.now()
-
-    if "Presence" in data and "id" in data:
-        sid = str(data["id"])
-        pr = data["Presence"]
-        who = data.get("who")
-        file_data = load_json(STATUS_FILE)
-        file_data[sid] = {"Presence": pr, "who": who}
-        save_json(STATUS_FILE, file_data)
-        if sid == str(SENSOR_ID):
-            with status_lock:
-                status["Presence"] = pr
-                status["who"] = who
-        with session_lock:
-            if pr == "active":
-                if sid not in session_tracker:
-                    session_tracker[sid] = now
-            elif pr == "inactive" and sid in session_tracker:
-                log_session(sid, session_tracker.pop(sid), now)
-        return "", 204
-
-    file_data = load_json(STATUS_FILE)
-    for sensor_id, presence in data.items():
-        if isinstance(presence, dict):
-            file_data[sensor_id] = presence
-            pr = presence.get("Presence", "inactive")
-            who = presence.get("who")
-        else:
-            pr = presence
-            who = None
-            file_data[sensor_id] = {"Presence": pr, "who": who}
-
-        if str(sensor_id) == str(SENSOR_ID):
-            with status_lock:
-                status["Presence"] = pr
-                status["who"] = who
-
-        with session_lock:
-            if pr == "active":
-                if sensor_id not in session_tracker:
-                    session_tracker[sensor_id] = now
-            elif pr == "inactive" and sensor_id in session_tracker:
-                log_session(sensor_id, session_tracker.pop(sensor_id), now)
-
-    save_json(STATUS_FILE, file_data)
-    return "", 204
-
-@app.route("/status/<sensor_id>", methods=["GET"])
-def get_status_by_id(sensor_id):
-    with status_lock:
-        if str(sensor_id) == str(SENSOR_ID):
-            return jsonify(status)
-    file_data = load_json(STATUS_FILE)
-    entry = file_data.get(sensor_id) or file_data.get(str(sensor_id))
-    if isinstance(entry, dict) and "Presence" in entry:
-        return jsonify({"Presence": entry["Presence"], "who": entry.get("who")})
-    if isinstance(entry, str):
-        return jsonify({"Presence": entry, "who": None})
-    return jsonify({"Presence": "inactive", "who": None})
-
-@app.route("/session-log", methods=["GET"])
+@app.route("/api/session-log", methods=["GET"])
 def get_session_log():
     return jsonify(load_json(SESSION_LOG_FILE))
 
-@app.route("/session-log", methods=["DELETE"])
+@app.route("/api/session-log", methods=["DELETE"])
 def delete_session_log():
     save_json(SESSION_LOG_FILE, [])
-    logger.info("Session log cleared.")
     return "", 204
 
-@app.route("/authorized-users", methods=["GET"])
+@app.route("/api/authorized-users", methods=["GET"])
 def get_authorized_users():
-    users = load_authorized_users()
-    return jsonify(users)
+    return jsonify(load_authorized_users())
 
-@app.route("/process-frame", methods=["POST"])
-def process_frame():
-    """Receives a webcam frame from the browser, processes it with OpenCV/face_recognition,
-    and returns the presence status.
-    """
-    global last_detected
-    if not USE_FACE_RECOG:
-        logger.error("Face recognition models missing on server.")
-        return jsonify({"success": False, "message": "Server-side face recognition models missing. Please ensure weights are installed."}), 500
+@app.route("/api/face-descriptors", methods=["GET"])
+def get_face_descriptors():
+    return jsonify(load_known_faces())
 
-    f = request.files.get("frame")
-    person = request.form.get("selected_person") or get_selected_person()
-    
-    if not person:
-        set_presence_status("inactive")
-        return jsonify({"presence": "inactive", "message": "No user selected for detection."})
+@app.route("/api/sync-presence", methods=["POST"])
+def sync_presence():
+    data = request.json or {}
+    presence = data.get("presence", "inactive")
+    who = data.get("who")
+    set_presence_status(presence, who)
+    return jsonify({"success": True})
 
-    known_faces = load_known_faces()
-    if person not in known_faces:
-        set_presence_status("inactive")
-        logger.warning(f"Detection attempted for unknown user: {person}")
-        return jsonify({"presence": "inactive", "message": f"User '{person}' not found in database."})
-        
-    if not f:
-        set_presence_status("inactive")
-        return jsonify({"presence": "inactive", "error": "No frame received from browser."}), 400
-
-    # Read image from memory
-    try:
-        npimg = np.frombuffer(f.read(), np.uint8)
-        frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-    except Exception as e:
-        logger.error(f"Error decoding frame: {e}")
-        return jsonify({"presence": "inactive", "error": "Failed to decode image frame."}), 500
-    
-    if frame is None:
-        return jsonify({"presence": "inactive", "error": "Invalid frame data received."}), 400
-
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
-    # We use 'hog' model which is faster for CPU/Serverless environments
-    face_locations = face_recognition.face_locations(rgb, model="hog")
-    face_encodings = face_recognition.face_encodings(rgb, face_locations)
-
-    now = time.time()
-    
-    if not face_locations:
-        if now - last_detected > BUFFER_TIME:
-            set_presence_status("inactive")
-            return jsonify({"presence": "inactive", "faces": []})
-        return jsonify({"presence": status["Presence"], "faces": []})
-
-    target_encoding = known_faces[person]
-    authorized_present = False
-
-    for face_encoding in face_encodings:
-        distance = face_recognition.face_distance([target_encoding], face_encoding)[0]
-        logger.debug(f"Face distance for '{person}': {distance:.3f} (thresh: {FACE_TOLERANCE})")
-        
-        if distance < FACE_TOLERANCE:
-            authorized_present = True
-            break
-            
-    if authorized_present:
-        if now - last_detected > BUFFER_TIME:
-            set_presence_status("active", person)
-            logger.info(f"Authorized: {person} detected via browser-captured frame.")
-        last_detected = now
-        return jsonify({"presence": "active", "faces": face_locations})
-    else:
-        if face_encodings:
-            set_presence_status("error", "unauthorized")
-            logger.warning(f"Unauthorized face detected via browser-captured frame (expected: {person})")
-        last_detected = now
-        return jsonify({"presence": "error", "faces": face_locations})
-
-
-@app.route("/enroll-image", methods=["POST"])
-def api_enroll_image():
-    data = request.json
-    name = normalize_name(data.get("name") or "")
-    image_path = (data.get("image_path") or "").strip()
-    if not name:
-        return jsonify({"success": False, "message": "Name is required"}), 400
-    if not image_path:
-        return jsonify({"success": False, "message": "image_path is required"}), 400
-    try:
-        success, message = enroll_from_image(name, image_path)
-    except Exception as e:
-        logger.error(f"Image enrollment error for {name}: {e}")
-        return jsonify({"success": False, "message": str(e)}), 500
-    if not success:
-        return jsonify({"success": False, "message": message}), 400
-    return jsonify({"success": True, "message": message})
-
-
-@app.route("/enroll-photo", methods=["POST"])
+@app.route("/api/enroll-photo", methods=["POST"])
 def api_enroll_photo():
-    """Receives a photo from the client for biometric enrollment."""
-    name = normalize_name(request.form.get("name") or "")
-    if not name:
-        return jsonify({"success": False, "message": "Name is required for browser-side enrollment."}), 400
-    
-    # Check if a photo was uploaded (either 'photo' or 'frame' key)
-    f = request.files.get("photo") or request.files.get("frame")
-    if not f or not f.filename:
-        # Check if they sent it as raw data if filename is missing
-        if not f:
-            return jsonify({"success": False, "message": "No photo received. Make sure your browser has camera access."}), 400
-            
-    # Save temporarily to a file for enrollment processing
-    filename = secure_filename((f.filename if f.filename else name + "_enroll.jpg"))
-    path = os.path.join(tempfile.gettempdir(), filename)
-    f.save(path)
-    
-    file_size = os.path.getsize(path)
-    logger.info(f"Received enrollment photo: {filename} ({file_size} bytes)")
+    data = request.json or {}
+    name = normalize_name(data.get("name") or "")
+    descriptor = data.get("descriptor")
+    if not name or not descriptor:
+        return jsonify({"success": False, "message": "Name and descriptor required"}), 400
+    add_authorized_user(name)
+    set_face_encoding(name, descriptor)
+    return jsonify({"success": True, "message": f"Successfully enrolled {name}"})
 
-    try:
-        success, message, locations = enroll_from_image(name, path)
-        if success:
-            logger.info(f"Successfully enrolled '{name}' from browser-captured photo.")
-        else:
-            # If enrollment fails and we are in DEBUG mode, copy it to the debug folder
-            if LOG_LEVEL == "DEBUG":
-                if not os.path.exists(DEBUG_DIR):
-                    os.makedirs(DEBUG_DIR)
-                debug_path = os.path.join(DEBUG_DIR, f"fail_{int(time.time())}_{filename}")
-                import shutil
-                shutil.copy2(path, debug_path)
-                logger.debug(f"Saved failed enrollment frame to {debug_path} for inspection.")
-    except Exception as e:
-        logger.error(f"Browser photo enrollment error for {name}: {e}")
-        return jsonify({"success": False, "message": f"Server processing error: {str(e)}", "faces": []}), 500
-    finally:
-        try:
-            if os.path.exists(path):
-                os.remove(path)
-        except OSError:
-            pass
-            
-    if not success:
-        return jsonify({"success": False, "message": message, "faces": locations}), 400
-    return jsonify({"success": True, "message": f"Successfully enrolled {name} via browser camera.", "faces": locations})
-
-
-@app.route("/remove-user", methods=["DELETE"])
+@app.route("/api/remove-user", methods=["DELETE"])
 def remove_user():
     data = request.json
     name = normalize_name(data.get("name") or "")
-    if not name:
-        return jsonify({"success": False, "message": "Name is required"}), 400
-    try:
+    if name:
         remove_authorized_user(name)
-        if get_selected_person() == name:
-            set_selected_person(None)
-        logger.info(f"Removed user: {name}")
         return jsonify({"success": True})
-    except Exception as e:
-        logger.error(f"Error removing user {name}: {e}")
-        return jsonify({"success": False, "message": str(e)}), 500
-
-
-@app.route("/select-user", methods=["POST"])
-def select_user():
-    data = request.json
-    name = normalize_name(data.get("name") or "")
-    users = load_authorized_users()
-    if name and name in users:
-        set_selected_person(name)
-        return jsonify({"success": True, "selected": name})
-    set_selected_person(None)
-    return jsonify({"success": False, "message": "Unknown user"}), 400
-
-@app.route("/selected-user", methods=["GET"])
-def get_selected_user():
-    return jsonify({"selected": get_selected_person()})
-
-def open_browser():
-    try:
-        webbrowser.open("http://127.0.0.1:3000")
-        logger.info("Browser launched.")
-    except Exception as e:
-        logger.error(f"Failed to open browser: {e}")
+    return jsonify({"success": False}), 400
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({"success": False, "message": "The requested URL was not found on the server."}), 404
-
-@app.errorhandler(405)
-def method_not_allowed(error):
-    return jsonify({"success": False, "message": "The method is not allowed for the requested URL."}), 405
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    return jsonify({"success": False, "message": "An internal server error occurred."}), 500
+    return jsonify({"success": False, "message": "Not found"}), 404
 
 @app.errorhandler(Exception)
 def handle_exception(e):
     logger.error(f"Unhandled Exception: {str(e)}", exc_info=True)
-    return jsonify({"success": False, "message": f"An unhandled exception occurred: {str(e)}"}), 500
+    return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == "__main__":
-    logger.info("Starting Flask application API (Serverless Ready)...")
-    threading.Timer(1.25, open_browser).start()
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=os.getenv("FLASK_DEBUG", "0") == "1",
-    )
+    app.run(host="0.0.0.0", port=5000)

@@ -1,11 +1,8 @@
 Flask
-opencv-python
+opencv-python-headless
 numpy
 Pillow
-dlib
-face-recognition-models
-gunicorn
 flask-cors
 cryptography
-face_recognition
 requests
+gunicorn

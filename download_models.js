@@ -1,13 +1,13 @@
+import https from 'https';
 import fs from 'fs';
 import path from 'path';
 
-const modelsUrl = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
-const modelsDir = path.join(process.cwd(), 'public', 'models');
+const MODELS_DIR = './public/models';
+const BASE_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
 
-const filesToDownload = [
-  'ssd_mobilenet_v1_model-weights_manifest.json',
-  'ssd_mobilenet_v1_model-shard1',
-  'ssd_mobilenet_v1_model-shard2',
+const files = [
+  'tiny_face_detector_model-weights_manifest.json',
+  'tiny_face_detector_model-shard1',
   'face_landmark_68_model-weights_manifest.json',
   'face_landmark_68_model-shard1',
   'face_recognition_model-weights_manifest.json',
@@ -15,36 +15,29 @@ const filesToDownload = [
   'face_recognition_model-shard2'
 ];
 
-if (!fs.existsSync(modelsDir)) {
-  fs.mkdirSync(modelsDir, { recursive: true });
+if (!fs.existsSync(MODELS_DIR)) {
+  fs.mkdirSync(MODELS_DIR, { recursive: true });
 }
 
-async function downloadFile(file) {
-  const filePath = path.join(modelsDir, file);
-  if (fs.existsSync(filePath) && fs.statSync(filePath).size > 100) {
-    console.log(`${file} already exists, skipping.`);
-    return;
-  }
+function download(file) {
+  const url = `${BASE_URL}/${file}`;
+  const dest = path.join(MODELS_DIR, file);
   
-  console.log(`Downloading ${file}...`);
-  const response = await fetch(modelsUrl + file);
-  if (!response.ok) throw new Error(`Failed to download ${file}: ${response.status}`);
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  fs.writeFileSync(filePath, buffer);
-  console.log(`Finished ${file}`);
-}
-
-async function run() {
-  try {
-    for (const f of filesToDownload) {
-      await downloadFile(f);
+  https.get(url, (res) => {
+    if (res.statusCode !== 200) {
+      console.error(`Failed to download ${file}: ${res.statusCode}`);
+      return;
     }
-    console.log("All models downloaded successfully!");
-  } catch (err) {
-    console.error("Error downloading models:", err);
-    process.exit(1);
-  }
+    const stream = fs.createWriteStream(dest);
+    res.pipe(stream);
+    stream.on('finish', () => {
+      stream.close();
+      console.log(`✓ Downloaded ${file}`);
+    });
+  }).on('error', (err) => {
+    console.error(`Error downloading ${file}: ${err.message}`);
+  });
 }
 
-run();
+console.log('Downloading models to public/models...');
+files.forEach(download);

@@ -1,23 +1,58 @@
 import { useState, useEffect, useRef } from 'react';
+import * as faceapi from 'face-api.js';
 
 export function useFaceApi(selectedPerson: string | null) {
-  const isLoaded = true; // No local ML models to load anymore
+  const [isLoaded, setIsLoaded] = useState(false);
   const [presence, setPresence] = useState<'idle' | 'active' | 'error'>('idle');
   const [detectedUser, setDetectedUser] = useState<string | null>(null);
   const [lastFaceLocations, setLastFaceLocations] = useState<number[][]>([]);
+  const [knownDescriptors, setKnownDescriptors] = useState<Record<string, number[]>>({});
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const requestRef = useRef<number>(null);
+  const lastSyncRef = useRef<number>(0);
 
+  // Load models on mount
   useEffect(() => {
-    // Create an offscreen canvas to capture frames
-    if (!canvasRef.current) {
-      canvasRef.current = document.createElement('canvas');
-      canvasRef.current.width = 640;
-      canvasRef.current.height = 480;
-    }
+    const loadModels = async () => {
+      try {
+        const MODEL_URL = '/models';
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+        console.log("AI Models loaded successfully");
+        setIsLoaded(true);
+        fetchKnownDescriptors();
+      } catch (err) {
+        console.error("Failed to load AI models:", err);
+        setPresence('error');
+      }
+    };
+
+    const fetchKnownDescriptors = async () => {
+      try {
+        const res = await fetch('/api/face-descriptors');
+        if (res.ok) {
+          const data = await res.json();
+          setKnownDescriptors(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch known descriptors:", e);
+      }
+    };
+
+    loadModels();
+  }, []);
+
+  // Detection loop
+  useEffect(() => {
+    if (!isLoaded || !selectedPerson) return;
 
     let stream: MediaStream | null = null;
-    let detectionInterval: number | null = null;
+    const faceTolerance = 0.45; // Match config.py
 
     const startVideo = async () => {
       try {
@@ -28,135 +63,119 @@ export function useFaceApi(selectedPerson: string | null) {
           videoRef.current.srcObject = stream;
         }
       } catch (err) {
-        console.error("Browser Camera access denied/error:", err);
+        console.error("Camera access error:", err);
         setPresence('error');
-        alert("Camera access denied by browser. Please grant permissions to enable presence detection.");
       }
     };
 
-    const processFrame = async () => {
-      if (!videoRef.current || videoRef.current.paused || videoRef.current.ended || !canvasRef.current || !selectedPerson) {
-        setPresence('idle');
+    const detect = async () => {
+      if (!videoRef.current || videoRef.current.paused || videoRef.current.ended) {
+        requestRef.current = requestAnimationFrame(detect);
         return;
       }
 
-      // Draw the current video frame to the canvas
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
-        
-        // Convert to blob and send to backend
-        canvasRef.current.toBlob(async (blob) => {
-          if (!blob) return;
+      // Detection
+      const detections = await faceapi.detectAllFaces(
+        videoRef.current, 
+        new faceapi.TinyFaceDetectorOptions()
+      ).withFaceLandmarks().withFaceDescriptors();
 
-          const formData = new FormData();
-          formData.append('frame', blob, 'frame.jpg');
-          formData.append('selected_person', selectedPerson);
+      // Update UI boxes
+      const boxes = detections.map(d => [
+        d.detection.box.top,
+        d.detection.box.right,
+        d.detection.box.bottom,
+        d.detection.box.left
+      ]);
+      setLastFaceLocations(boxes);
 
-          try {
-            // Relative paths for Vercel/proxied local dev
-            const response = await fetch('/api/process-frame', {
-              method: 'POST',
-              body: formData
-            });
+      // Match logic
+      let matched = false;
+      const targetDescriptor = knownDescriptors[selectedPerson.toLowerCase()];
 
-            if (response.ok) {
-              const text = await response.text();
-              try {
-                const data = JSON.parse(text);
-                setPresence(data.presence);
-                setLastFaceLocations(data.faces || []);
-                
-                if (data.presence === 'active') {
-                  setDetectedUser(selectedPerson);
-                } else {
-                  setDetectedUser(null);
-                }
-              } catch (parseError) {
-                console.error("Failed to parse JSON response from /process-frame:", parseError);
-                console.log("Raw Response Body:", text);
-                setPresence('error');
-                setLastFaceLocations([]);
-              }
-            } else {
-              const errorText = await response.text();
-              console.warn(`Server returned error status ${response.status} for /process-frame:`, errorText);
-              setPresence('error');
-              setLastFaceLocations([]);
-            }
-          } catch (error) {
-            console.error("Error pushing frame to backend:", error);
-            setPresence('error');
+      if (targetDescriptor) {
+        const target = new Float32Array(targetDescriptor);
+        for (const det of detections) {
+          const distance = faceapi.euclideanDistance(det.descriptor, target);
+          if (distance < faceTolerance) {
+            matched = true;
+            break;
           }
-        }, 'image/jpeg', 0.8);
+        }
+      }
+
+      const newPresence = matched ? 'active' : (detections.length > 0 ? 'error' : 'idle');
+      setPresence(newPresence);
+      setDetectedUser(matched ? selectedPerson : null);
+
+      // Sync status with backend periodically (every 2 seconds)
+      const now = Date.now();
+      if (now - lastSyncRef.current > 2000) {
+        syncPresence(newPresence, matched ? selectedPerson : null);
+        lastSyncRef.current = now;
+      }
+
+      requestRef.current = requestAnimationFrame(detect);
+    };
+
+    const syncPresence = async (p: string, user: string | null) => {
+      try {
+        fetch('/api/sync-presence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ presence: p, who: user })
+        });
+      } catch (e) {
+        console.error("Presence sync failed:", e);
       }
     };
 
-    videoRef.current?.addEventListener('play', () => {
-      // Poll at backend every 1.5 seconds to limit server load
-      detectionInterval = window.setInterval(processFrame, 1500);
+    startVideo().then(() => {
+      requestRef.current = requestAnimationFrame(detect);
     });
-
-    startVideo();
 
     return () => {
-      if (detectionInterval) clearInterval(detectionInterval);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
       if (stream) stream.getTracks().forEach(track => track.stop());
     };
-  }, [selectedPerson]);
+  }, [isLoaded, selectedPerson, knownDescriptors]);
 
   const enrollFace = async (name: string): Promise<{ success: boolean; message?: string }> => {
-    if (!videoRef.current || !canvasRef.current) return { success: false, message: "Hardware not ready" };
+    if (!videoRef.current || !isLoaded) return { success: false, message: "AI Models not ready" };
     
-    return new Promise((resolve) => {
-      const ctx = canvasRef.current!.getContext('2d');
-      if (!ctx) return resolve({ success: false, message: "Could not get canvas context" });
+    try {
+      const detection = await faceapi.detectSingleFace(
+        videoRef.current, 
+        new faceapi.TinyFaceDetectorOptions()
+      ).withFaceLandmarks().withFaceDescriptor();
 
-      ctx.drawImage(videoRef.current!, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
+      if (!detection) {
+        return { success: false, message: "No face detected. Please look clearly at the camera." };
+      }
+
+      // Send the high-quality 128-float descriptor to the backend
+      const res = await fetch('/api/enroll-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          descriptor: Array.from(detection.descriptor)
+        }),
+      });
       
-      canvasRef.current!.toBlob(async (blob) => {
-        if (!blob) return resolve({ success: false, message: "Failed to capture frame from canvas" });
-
-        const formData = new FormData();
-        formData.append('photo', blob, 'enroll.jpg');
-        formData.append('name', name);
-
-        try {
-          // Relative path for enrollment as well
-          const res = await fetch('/api/enroll-photo', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          const text = await res.text();
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch (parseError) {
-            console.error("Failed to parse JSON response from /enroll-photo:", parseError);
-            console.log("Raw Response Body:", text);
-            return resolve({ success: false, message: "Server returned non-JSON response. Check console logs for details." });
-          }
-
-          if (data.faces && data.faces.length > 0) {
-            setLastFaceLocations(data.faces);
-            // Clear box after 3 seconds so it doesn't stay forever
-            setTimeout(() => setLastFaceLocations([]), 3000);
-          } else {
-            setLastFaceLocations([]);
-          }
-
-          if (!res.ok) {
-            console.warn("Enrollment failed:", data.message || "Unknown error");
-          }
-          resolve({ success: data.success, message: data.message });
-        } catch (e) {
-          console.error("WebRTC Enrollment Error:", e);
-          setLastFaceLocations([]);
-          resolve({ success: false, message: e instanceof Error ? e.message : "Unknown enrollment error" });
-        }
-      }, 'image/jpeg', 0.95);
-    });
+      const data = await res.json();
+      if (data.success) {
+        // Update local reference so recognition works immediately
+        setKnownDescriptors(prev => ({
+          ...prev,
+          [name.toLowerCase()]: Array.from(detection.descriptor)
+        }));
+      }
+      return { success: data.success, message: data.message };
+    } catch (e) {
+      console.error("Enrollment error:", e);
+      return { success: false, message: "Client-side enrollment failed." };
+    }
   };
 
   return { isLoaded, videoRef, presence, detectedUser, enrollFace, lastFaceLocations };
