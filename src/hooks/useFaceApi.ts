@@ -61,16 +61,26 @@ export function useFaceApi(selectedPerson: string | null) {
             });
 
             if (response.ok) {
-              const data = await response.json();
-              setPresence(data.presence);
-              setLastFaceLocations(data.faces || []);
-              
-              if (data.presence === 'active') {
-                setDetectedUser(selectedPerson);
-              } else {
-                setDetectedUser(null);
+              const text = await response.text();
+              try {
+                const data = JSON.parse(text);
+                setPresence(data.presence);
+                setLastFaceLocations(data.faces || []);
+                
+                if (data.presence === 'active') {
+                  setDetectedUser(selectedPerson);
+                } else {
+                  setDetectedUser(null);
+                }
+              } catch (parseError) {
+                console.error("Failed to parse JSON response from /process-frame:", parseError);
+                console.log("Raw Response Body:", text);
+                setPresence('error');
+                setLastFaceLocations([]);
               }
             } else {
+              const errorText = await response.text();
+              console.warn(`Server returned error status ${response.status} for /process-frame:`, errorText);
               setPresence('error');
               setLastFaceLocations([]);
             }
@@ -117,8 +127,17 @@ export function useFaceApi(selectedPerson: string | null) {
             method: 'POST',
             body: formData,
           });
-          const data = await res.json();
           
+          const text = await res.text();
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            console.error("Failed to parse JSON response from /enroll-photo:", parseError);
+            console.log("Raw Response Body:", text);
+            return resolve({ success: false, message: "Server returned non-JSON response. Check console logs for details." });
+          }
+
           if (data.faces && data.faces.length > 0) {
             setLastFaceLocations(data.faces);
             // Clear box after 3 seconds so it doesn't stay forever
@@ -128,7 +147,7 @@ export function useFaceApi(selectedPerson: string | null) {
           }
 
           if (!res.ok) {
-            console.warn("Enrollment failed:", data.message);
+            console.warn("Enrollment failed:", data.message || "Unknown error");
           }
           resolve({ success: data.success, message: data.message });
         } catch (e) {

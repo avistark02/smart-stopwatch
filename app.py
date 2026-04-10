@@ -393,6 +393,23 @@ def open_browser():
     except Exception as e:
         logger.error(f"Failed to open browser: {e}")
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"success": False, "message": "The requested URL was not found on the server."}), 404
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return jsonify({"success": False, "message": "The method is not allowed for the requested URL."}), 405
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({"success": False, "message": "An internal server error occurred."}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Unhandled Exception: {str(e)}", exc_info=True)
+    return jsonify({"success": False, "message": f"An unhandled exception occurred: {str(e)}"}), 500
+
 if __name__ == "__main__":
     logger.info("Starting Flask application API (Serverless Ready)...")
     threading.Timer(1.25, open_browser).start()
