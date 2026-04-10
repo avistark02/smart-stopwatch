@@ -6,7 +6,7 @@ import { getAuthorizedUsers, removeUser, AuthorizedUser } from '../lib/storage';
 interface Props {
   selectedPerson: string | null;
   onPersonSelected: (person: string | null) => void;
-  enrollFace: (name: string) => Promise<boolean>;
+  enrollFace: (name: string) => Promise<{ success: boolean; message?: string }>;
   isCameraReady: boolean;
 }
 

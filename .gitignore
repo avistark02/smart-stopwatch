@@ -72,6 +72,9 @@ enrolled_thumbnails/
 *.spec
 
 secret.key
+.npmrc
+.pypirc
+debug/
 
 # =========================
 # Documentation

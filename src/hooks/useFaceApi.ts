@@ -4,6 +4,7 @@ export function useFaceApi(selectedPerson: string | null) {
   const isLoaded = true; // No local ML models to load anymore
   const [presence, setPresence] = useState<'idle' | 'active' | 'error'>('idle');
   const [detectedUser, setDetectedUser] = useState<string | null>(null);
+  const [lastFaceLocations, setLastFaceLocations] = useState<number[][]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -62,6 +63,8 @@ export function useFaceApi(selectedPerson: string | null) {
             if (response.ok) {
               const data = await response.json();
               setPresence(data.presence);
+              setLastFaceLocations(data.faces || []);
+              
               if (data.presence === 'active') {
                 setDetectedUser(selectedPerson);
               } else {
@@ -69,6 +72,7 @@ export function useFaceApi(selectedPerson: string | null) {
               }
             } else {
               setPresence('error');
+              setLastFaceLocations([]);
             }
           } catch (error) {
             console.error("Error pushing frame to backend:", error);
@@ -91,8 +95,8 @@ export function useFaceApi(selectedPerson: string | null) {
     };
   }, [selectedPerson]);
 
-  const enrollFace = async (name: string): Promise<boolean> => {
-    if (!videoRef.current || !canvasRef.current) return false;
+  const enrollFace = async (name: string): Promise<{ success: boolean; message?: string }> => {
+    if (!videoRef.current || !canvasRef.current) return { success: false, message: "Hardware not ready" };
     
     return new Promise((resolve) => {
       const ctx = canvasRef.current!.getContext('2d');
@@ -101,7 +105,7 @@ export function useFaceApi(selectedPerson: string | null) {
       ctx.drawImage(videoRef.current!, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
       
       canvasRef.current!.toBlob(async (blob) => {
-        if (!blob) return resolve(false);
+        if (!blob) return resolve({ success: false, message: "Failed to capture frame from canvas" });
 
         const formData = new FormData();
         formData.append('photo', blob, 'enroll.jpg');
@@ -114,14 +118,27 @@ export function useFaceApi(selectedPerson: string | null) {
             body: formData,
           });
           const data = await res.json();
-          resolve(data.success);
+          
+          if (data.faces && data.faces.length > 0) {
+            setLastFaceLocations(data.faces);
+            // Clear box after 3 seconds so it doesn't stay forever
+            setTimeout(() => setLastFaceLocations([]), 3000);
+          } else {
+            setLastFaceLocations([]);
+          }
+
+          if (!res.ok) {
+            console.warn("Enrollment failed:", data.message);
+          }
+          resolve({ success: data.success, message: data.message });
         } catch (e) {
           console.error("WebRTC Enrollment Error:", e);
-          resolve(false);
+          setLastFaceLocations([]);
+          resolve({ success: false, message: e instanceof Error ? e.message : "Unknown enrollment error" });
         }
       }, 'image/jpeg', 0.95);
     });
   };
 
-  return { isLoaded, videoRef, presence, detectedUser, enrollFace };
+  return { isLoaded, videoRef, presence, detectedUser, enrollFace, lastFaceLocations };
 }

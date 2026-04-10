@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Clock, Zap } from 'lucide-react';
 import StopwatchDisplay from './components/StopwatchDisplay';
 import Controls from './components/Controls';
@@ -14,7 +14,8 @@ export default function App() {
   const [sessionStartTime, setSessionStartTime] = useState<string | null>(null);
   
   // Custom hook wrapping face-api.js
-  const { isLoaded, videoRef, presence, enrollFace } = useFaceApi(selectedPerson);
+  const { isLoaded, videoRef, presence, enrollFace, lastFaceLocations } = useFaceApi(selectedPerson);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
 
   // Status mapping
   let displayStatus: 'idle' | 'running' | 'unauthorized' = 'idle';
@@ -38,6 +39,42 @@ export default function App() {
       }
     }
   }, [presence]);
+  
+  // Draw face overlay
+  useEffect(() => {
+    const canvas = overlayRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (lastFaceLocations.length === 0) return;
+
+    ctx.strokeStyle = '#3b82f6'; // primary color
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    lastFaceLocations.forEach(loc => {
+      // face_recognition: (top, right, bottom, left)
+      const [top, right, bottom, left] = loc;
+      const width = right - left;
+      const height = bottom - top;
+      
+      // Mirroring: Since video is scale-x-[-1], we logic same:
+      // The coordinates from backend are on the "original" frame.
+      // So we draw them on a mirrored canvas or just draw normally and let the parent handle mirror.
+      // Better: Parent wraps both in scale-x-[-1].
+      ctx.strokeRect(left, top, width, height);
+      
+      // Add a small label
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(left, top - 25, 70, 25);
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 14px Inter';
+      ctx.fillText('FACE', left + 5, top - 7);
+    });
+  }, [lastFaceLocations]);
 
   // Timer effect
   useEffect(() => {
@@ -74,8 +111,14 @@ export default function App() {
         
         {/* Left Side: Video Feed */}
         <div className="w-full xl:w-1/4 flex flex-col items-center">
-           <div className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-surface-variant/50 hidden xl:block mb-4 shadow-xl">
-             <video ref={videoRef} autoPlay muted playsInline className="w-full h-auto max-w-[300px] object-cover scale-x-[-1]" />
+           <div className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-surface-variant/50 hidden xl:block mb-4 shadow-xl scale-x-[-1]">
+             <video ref={videoRef} autoPlay muted playsInline className="w-full h-auto max-w-[300px] object-cover" />
+             <canvas 
+               ref={overlayRef} 
+               width={640} 
+               height={480} 
+               className="absolute inset-0 w-full h-full pointer-events-none" 
+             />
              {!isLoaded && (
                <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-primary font-bold animate-pulse">
                  Starting Browser Camera...

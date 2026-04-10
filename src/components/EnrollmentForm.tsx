@@ -3,7 +3,7 @@ import { Camera, AlertCircle, Sparkles } from 'lucide-react';
 
 interface Props {
   onUserAdded: () => void;
-  enrollFace: (name: string) => Promise<boolean>;
+  enrollFace: (name: string) => Promise<{ success: boolean; message?: string }>;
   isCameraReady: boolean;
 }
 
@@ -24,14 +24,14 @@ export default function EnrollmentForm({ onUserAdded, enrollFace, isCameraReady 
     setSuccess('');
 
     try {
-      const success = await enrollFace(name.trim());
-      if (success) {
-        setSuccess('✓ Enrollment successful via Browser Camera');
+      const result = await enrollFace(name.trim());
+      if (result.success) {
+        setSuccess(result.message || '✓ Enrollment successful');
         setName('');
         onUserAdded();
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError('No face detected or enrollment failed. Make sure your browser has camera permissions and you are visible.');
+        setError(result.message || 'Enrollment failed. Please ensure you are visible and well-lit.');
       }
     } catch (err) {
       setError('Enrollment error: ' + (err instanceof Error ? err.message : 'Unknown error'));

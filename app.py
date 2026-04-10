@@ -30,6 +30,7 @@ from config import (
     FACE_TOLERANCE,
     LOG_LEVEL,
     LOG_FILE,
+    DEBUG_DIR,
     SENSOR_ID,
     STATUS_FILE,
     SESSION_LOG_FILE,
@@ -256,8 +257,8 @@ def process_frame():
     if not face_locations:
         if now - last_detected > BUFFER_TIME:
             set_presence_status("inactive")
-            return jsonify({"presence": "inactive"})
-        return jsonify({"presence": status["Presence"]})
+            return jsonify({"presence": "inactive", "faces": []})
+        return jsonify({"presence": status["Presence"], "faces": []})
 
     target_encoding = known_faces[person]
     authorized_present = False
@@ -275,13 +276,13 @@ def process_frame():
             set_presence_status("active", person)
             logger.info(f"Authorized: {person} detected via browser-captured frame.")
         last_detected = now
-        return jsonify({"presence": "active"})
+        return jsonify({"presence": "active", "faces": face_locations})
     else:
         if face_encodings:
             set_presence_status("error", "unauthorized")
             logger.warning(f"Unauthorized face detected via browser-captured frame (expected: {person})")
         last_detected = now
-        return jsonify({"presence": "error"})
+        return jsonify({"presence": "error", "faces": face_locations})
 
 
 @app.route("/enroll-image", methods=["POST"])
@@ -318,18 +319,29 @@ def api_enroll_photo():
             return jsonify({"success": False, "message": "No photo received. Make sure your browser has camera access."}), 400
             
     # Save temporarily to a file for enrollment processing
-    path = os.path.join(
-        tempfile.gettempdir(), secure_filename((f.filename if f.filename else name + "_enroll.jpg"))
-    )
+    filename = secure_filename((f.filename if f.filename else name + "_enroll.jpg"))
+    path = os.path.join(tempfile.gettempdir(), filename)
     f.save(path)
     
+    file_size = os.path.getsize(path)
+    logger.info(f"Received enrollment photo: {filename} ({file_size} bytes)")
+
     try:
-        success, message = enroll_from_image(name, path)
+        success, message, locations = enroll_from_image(name, path)
         if success:
             logger.info(f"Successfully enrolled '{name}' from browser-captured photo.")
+        else:
+            # If enrollment fails and we are in DEBUG mode, copy it to the debug folder
+            if LOG_LEVEL == "DEBUG":
+                if not os.path.exists(DEBUG_DIR):
+                    os.makedirs(DEBUG_DIR)
+                debug_path = os.path.join(DEBUG_DIR, f"fail_{int(time.time())}_{filename}")
+                import shutil
+                shutil.copy2(path, debug_path)
+                logger.debug(f"Saved failed enrollment frame to {debug_path} for inspection.")
     except Exception as e:
         logger.error(f"Browser photo enrollment error for {name}: {e}")
-        return jsonify({"success": False, "message": f"Server processing error: {str(e)}"}), 500
+        return jsonify({"success": False, "message": f"Server processing error: {str(e)}", "faces": []}), 500
     finally:
         try:
             if os.path.exists(path):
@@ -338,8 +350,8 @@ def api_enroll_photo():
             pass
             
     if not success:
-        return jsonify({"success": False, "message": message}), 400
-    return jsonify({"success": True, "message": f"Successfully enrolled {name} via browser camera."})
+        return jsonify({"success": False, "message": message, "faces": locations}), 400
+    return jsonify({"success": True, "message": f"Successfully enrolled {name} via browser camera.", "faces": locations})
 
 
 @app.route("/remove-user", methods=["DELETE"])

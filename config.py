@@ -38,5 +38,6 @@ ENROLLMENT_FACE_SIZE_MIN = (80, 80)
 ENROLLMENT_FACE_SIZE_MAX = (350, 350)
 
 # Logging
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "DEBUG"
 LOG_FILE = os.path.join(_ROOT, "blinq.log")
+DEBUG_DIR = os.path.join(_ROOT, "debug")
