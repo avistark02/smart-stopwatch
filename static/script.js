@@ -11,6 +11,10 @@ let disconnected = false;
 let sessionLog = [];
 let sessionStart = null;
 let lastInactiveTime = null;
+let webcamStream = null;
+let webcamActive = false;
+let captureInterval = null;
+const PROCESS_INTERVAL = 1500; // Poll every 1.5s to limit server load
 
 function logEvent(message, level = "info") {
   const timestamp = new Date().toISOString();
@@ -407,26 +411,115 @@ function enrollUser(name) {
     alert("Please enter a name");
     return;
   }
-  logEvent(`Starting webcam enrollment for ${name.trim()}`, "info");
-  fetch("/enroll", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: name.trim() }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.success) {
-        logEvent(`Enrollment successful for ${name.trim()}`, "success");
-        alert("Enrollment successful");
-        loadAuthorizedUsers();
-      } else {
-        logEvent(`Enrollment failed: ${data.message}`, "error");
-        alert("Enrollment failed: " + data.message);
+  
+  const video = document.getElementById("webcam-video");
+  const canvas = document.getElementById("capture-canvas");
+  
+  if (!webcamActive || !video || !canvas) {
+    alert("Webcam not active. Please ensure your browser has camera permissions and try again.");
+    return;
+  }
+
+  logEvent(`Capturing high-quality frame for "${name.trim()}" enrollment...`, "info");
+  
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      alert("Failed to capture image from webcam.");
+      return;
+    }
+    
+    const fd = new FormData();
+    fd.append("name", name.trim());
+    fd.append("photo", blob, "enroll.jpg");
+
+    fetch("/enroll-photo", {
+      method: "POST",
+      body: fd,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          logEvent(data.message || `Enrollment successful for ${name.trim()}`, "success");
+          alert("Enrollment successful via Browser Camera!");
+          loadAuthorizedUsers();
+        } else {
+          logEvent(`Enrollment failed: ${data.message}`, "error");
+          alert("Enrollment failed: " + data.message);
+        }
+      })
+      .catch((err) => {
+        logEvent(`Enrollment API error: ${err.message}`, "error");
+        alert("Enrollment error: Check connection to server.");
+      });
+  }, "image/jpeg", 0.95);
+}
+
+async function initWebcam() {
+  const video = document.getElementById("webcam-video");
+  if (!video) return;
+
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: "user" }
+    });
+    video.srcObject = webcamStream;
+    webcamActive = true;
+    logEvent("Webcam initialized in browser", "success");
+    
+    // Start background processing loop
+    startCaptureLoop();
+  } catch (err) {
+    console.error("Camera Access Error:", err);
+    logEvent(`Camera access denied: ${err.message}. Please enable camera in browser.`, "error");
+    updateStatus("Camera Required", "⚠️");
+  }
+}
+
+function startCaptureLoop() {
+  if (captureInterval) clearInterval(captureInterval);
+  captureInterval = setInterval(captureAndSendFrame, PROCESS_INTERVAL);
+}
+
+function captureAndSendFrame() {
+  if (!webcamActive) return;
+  
+  const video = document.getElementById("webcam-video");
+  const canvas = document.getElementById("capture-canvas");
+  const selectedDisplay = document.getElementById("selected-person");
+  const selectedPerson = selectedDisplay ? selectedDisplay.textContent : null;
+
+  if (!video || !canvas || !selectedPerson || selectedPerson === "None") {
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+
+    const fd = new FormData();
+    fd.append("frame", blob, "frame.jpg");
+    fd.append("selected_person", selectedPerson);
+
+    fetch("/process-frame", {
+      method: "POST",
+      body: fd
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Backend updates status.json, pollPresence will see changes
+      if (data.error) {
+        console.warn("Frame processing warning:", data.error);
       }
     })
-    .catch((err) => {
-      logEvent(`Enrollment error: ${err.message}`, "error");
+    .catch(err => {
+      console.error("Error sending frame to backend:", err);
     });
+  }, "image/jpeg", 0.7);
 }
 
 function removeUser(name) {
@@ -506,6 +599,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadSessionLog();
   loadAuthorizedUsers();
   loadSelectedUser();
+  initWebcam();
 });
 
 setInterval(pollPresence, 1000);

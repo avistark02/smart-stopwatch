@@ -78,7 +78,7 @@ export default function App() {
              <video ref={videoRef} autoPlay muted playsInline className="w-full h-auto max-w-[300px] object-cover scale-x-[-1]" />
              {!isLoaded && (
                <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-primary font-bold animate-pulse">
-                 Loading AI Models...
+                 Starting Browser Camera...
                </div>
              )}
              {isLoaded && <div className="absolute top-2 right-2 flex gap-1">

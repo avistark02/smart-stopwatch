@@ -209,35 +209,46 @@ def get_authorized_users():
 
 @app.route("/process-frame", methods=["POST"])
 def process_frame():
+    """Receives a webcam frame from the browser, processes it with OpenCV/face_recognition,
+    and returns the presence status.
+    """
     global last_detected
     if not USE_FACE_RECOG:
-        return jsonify({"success": False, "message": "Face recognition models missing"}), 500
+        logger.error("Face recognition models missing on server.")
+        return jsonify({"success": False, "message": "Server-side face recognition models missing. Please ensure weights are installed."}), 500
 
     f = request.files.get("frame")
     person = request.form.get("selected_person") or get_selected_person()
     
     if not person:
         set_presence_status("inactive")
-        return jsonify({"presence": "inactive"})
+        return jsonify({"presence": "inactive", "message": "No user selected for detection."})
 
     known_faces = load_known_faces()
     if person not in known_faces:
         set_presence_status("inactive")
-        return jsonify({"presence": "inactive"})
+        logger.warning(f"Detection attempted for unknown user: {person}")
+        return jsonify({"presence": "inactive", "message": f"User '{person}' not found in database."})
         
     if not f:
         set_presence_status("inactive")
-        return jsonify({"presence": "inactive", "error": "No frame received"}), 400
+        return jsonify({"presence": "inactive", "error": "No frame received from browser."}), 400
 
     # Read image from memory
-    npimg = np.frombuffer(f.read(), np.uint8)
-    frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    try:
+        npimg = np.frombuffer(f.read(), np.uint8)
+        frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    except Exception as e:
+        logger.error(f"Error decoding frame: {e}")
+        return jsonify({"presence": "inactive", "error": "Failed to decode image frame."}), 500
     
     if frame is None:
-        return jsonify({"presence": "inactive", "error": "Invalid frame"}), 400
+        return jsonify({"presence": "inactive", "error": "Invalid frame data received."}), 400
 
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    face_locations = face_recognition.face_locations(rgb)
+    
+    # We use 'hog' model which is faster for CPU/Serverless environments
+    face_locations = face_recognition.face_locations(rgb, model="hog")
     face_encodings = face_recognition.face_encodings(rgb, face_locations)
 
     now = time.time()
@@ -262,13 +273,13 @@ def process_frame():
     if authorized_present:
         if now - last_detected > BUFFER_TIME:
             set_presence_status("active", person)
-            logger.info(f"Authorized: {person} detected via client-frame.")
+            logger.info(f"Authorized: {person} detected via browser-captured frame.")
         last_detected = now
         return jsonify({"presence": "active"})
     else:
         if face_encodings:
             set_presence_status("error", "unauthorized")
-            logger.warning(f"Unauthorized face detected via client-frame (expected: {person})")
+            logger.warning(f"Unauthorized face detected via browser-captured frame (expected: {person})")
         last_detected = now
         return jsonify({"presence": "error"})
 
@@ -294,33 +305,41 @@ def api_enroll_image():
 
 @app.route("/enroll-photo", methods=["POST"])
 def api_enroll_photo():
+    """Receives a photo from the client for biometric enrollment."""
     name = normalize_name(request.form.get("name") or "")
     if not name:
-        return jsonify({"success": False, "message": "Name is required"}), 400
-    f = request.files.get("photo")
+        return jsonify({"success": False, "message": "Name is required for browser-side enrollment."}), 400
+    
+    # Check if a photo was uploaded (either 'photo' or 'frame' key)
+    f = request.files.get("photo") or request.files.get("frame")
     if not f or not f.filename:
-        # Fallback to accepting a blob directly from WEBRTC
-        f = request.files.get("frame")
+        # Check if they sent it as raw data if filename is missing
         if not f:
-            return jsonify({"success": False, "message": "photo/frame file required"}), 400
+            return jsonify({"success": False, "message": "No photo received. Make sure your browser has camera access."}), 400
             
+    # Save temporarily to a file for enrollment processing
     path = os.path.join(
-        tempfile.gettempdir(), secure_filename(f.filename or name + "_enroll.jpg") or "upload.jpg"
+        tempfile.gettempdir(), secure_filename((f.filename if f.filename else name + "_enroll.jpg"))
     )
     f.save(path)
+    
     try:
         success, message = enroll_from_image(name, path)
+        if success:
+            logger.info(f"Successfully enrolled '{name}' from browser-captured photo.")
     except Exception as e:
-        logger.error(f"Photo upload enrollment error for {name}: {e}")
-        return jsonify({"success": False, "message": str(e)}), 500
+        logger.error(f"Browser photo enrollment error for {name}: {e}")
+        return jsonify({"success": False, "message": f"Server processing error: {str(e)}"}), 500
     finally:
         try:
-            os.remove(path)
+            if os.path.exists(path):
+                os.remove(path)
         except OSError:
             pass
+            
     if not success:
         return jsonify({"success": False, "message": message}), 400
-    return jsonify({"success": True, "message": message})
+    return jsonify({"success": True, "message": f"Successfully enrolled {name} via browser camera."})
 
 
 @app.route("/remove-user", methods=["DELETE"])

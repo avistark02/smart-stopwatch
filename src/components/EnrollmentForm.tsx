@@ -26,12 +26,12 @@ export default function EnrollmentForm({ onUserAdded, enrollFace, isCameraReady 
     try {
       const success = await enrollFace(name.trim());
       if (success) {
-        setSuccess('✓ Enrollment successful');
+        setSuccess('✓ Enrollment successful via Browser Camera');
         setName('');
         onUserAdded();
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError('No face detected or enrollment failed. Make sure you are clearly visible.');
+        setError('No face detected or enrollment failed. Make sure your browser has camera permissions and you are visible.');
       }
     } catch (err) {
       setError('Enrollment error: ' + (err instanceof Error ? err.message : 'Unknown error'));

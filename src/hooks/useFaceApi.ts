@@ -20,12 +20,16 @@ export function useFaceApi(selectedPerson: string | null) {
 
     const startVideo = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 640, height: 480, facingMode: "user" } 
+        });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       } catch (err) {
-        console.error("Camera error:", err);
+        console.error("Browser Camera access denied/error:", err);
+        setPresence('error');
+        alert("Camera access denied by browser. Please grant permissions to enable presence detection.");
       }
     };
 
@@ -49,8 +53,8 @@ export function useFaceApi(selectedPerson: string | null) {
           formData.append('selected_person', selectedPerson);
 
           try {
-            // Using absolute URL to backend when calling via Vite proxy or directly
-            const response = await fetch('http://127.0.0.1:5000/process-frame', {
+            // Relative paths for Vercel/proxied local dev
+            const response = await fetch('/process-frame', {
               method: 'POST',
               body: formData
             });
@@ -104,7 +108,8 @@ export function useFaceApi(selectedPerson: string | null) {
         formData.append('name', name);
 
         try {
-          const res = await fetch('http://127.0.0.1:5000/enroll-photo', {
+          // Relative path for enrollment as well
+          const res = await fetch('/enroll-photo', {
             method: 'POST',
             body: formData,
           });
