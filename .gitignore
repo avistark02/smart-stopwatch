@@ -60,11 +60,20 @@ session_log.json
 session_log.json.txt
 
 # =========================
-# Biometric / Sensitive Data
+# Biometric / Sensitive Data & Generated JSON
 # =========================
 known_faces.pkl
 authorized_users.json
 enrolled_thumbnails/
+debug/
+sessions/
+logs/
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.node.json
+!authorized_users.json.example
 
 # =========================
 # PyInstaller Build Specs

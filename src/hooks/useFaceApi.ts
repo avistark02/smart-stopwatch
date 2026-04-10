@@ -100,7 +100,7 @@ export function useFaceApi(selectedPerson: string | null) {
     
     return new Promise((resolve) => {
       const ctx = canvasRef.current!.getContext('2d');
-      if (!ctx) return resolve(false);
+      if (!ctx) return resolve({ success: false, message: "Could not get canvas context" });
 
       ctx.drawImage(videoRef.current!, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
       
