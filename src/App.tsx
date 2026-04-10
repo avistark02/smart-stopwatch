@@ -29,15 +29,15 @@ export default function App() {
     if (presence === 'active') {
       if (!isRunning) {
         setIsRunning(true);
-        const now = Date.now();
-        setSessionTimestamp(now);
+        setSessionTimestamp(Date.now());
         setSessionISOStart(new Date().toISOString());
       }
     } else {
       if (isRunning) {
         setIsRunning(false);
         if (sessionTimestamp) {
-          const delta = Math.floor((Date.now() - sessionTimestamp) / 1000);
+          // Use Math.round for consistent accumulation with the display logic
+          const delta = Math.round((Date.now() - sessionTimestamp) / 1000);
           setAccumulatedTime(prev => prev + delta);
         }
         if (sessionISOStart) {
@@ -47,19 +47,20 @@ export default function App() {
         setSessionTimestamp(null);
       }
     }
-  }, [presence]);
+  }, [presence, isRunning, sessionTimestamp, sessionISOStart]);
   
-  // Timer Display Update (Drift-Free)
+  // Timer Display Update (Smooth & Drift-Free)
   useEffect(() => {
-    let interval: number;
-    if (isRunning && sessionTimestamp !== null) {
-      interval = window.setInterval(() => {
-        const currentSessionSeconds = Math.floor((Date.now() - sessionTimestamp) / 1000);
-        setDisplayTime(accumulatedTime + currentSessionSeconds);
-      }, 100); // 10Hz update for smooth UI
-    } else {
-      setDisplayTime(accumulatedTime);
-    }
+    const interval = setInterval(() => {
+      if (isRunning && sessionTimestamp) {
+        // Higher frequency update (100ms) with Math.round for "consecutive" feel
+        const elapsed = Math.round((Date.now() - sessionTimestamp) / 1000);
+        setDisplayTime(accumulatedTime + elapsed);
+      } else {
+        setDisplayTime(accumulatedTime);
+      }
+    }, 100);
+
     return () => clearInterval(interval);
   }, [isRunning, sessionTimestamp, accumulatedTime]);
 
@@ -96,9 +97,7 @@ export default function App() {
     setAccumulatedTime(0);
     setDisplayTime(0);
     if (isRunning) {
-      const now = Date.now();
-      setSessionTimestamp(now);
-      // Log current span and start new one
+      setSessionTimestamp(Date.now());
       if (sessionISOStart) {
         logSession(sessionISOStart, new Date().toISOString());
         setSessionISOStart(new Date().toISOString());
@@ -190,8 +189,3 @@ export default function App() {
   );
 }
 
-function presentationColor(s: string) {
-  if (s === 'running') return 'bg-green-500 shadow-[0_0_10px_#22c55e]';
-  if (s === 'unauthorized') return 'bg-red-500 shadow-[0_0_10px_#ef4444]';
-  return 'bg-blue-500 shadow-[0_0_10px_#3b82f6]';
-}
