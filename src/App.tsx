@@ -61,10 +61,6 @@ export default function App() {
       const width = right - left;
       const height = bottom - top;
       
-      // Mirroring: Since video is scale-x-[-1], we logic same:
-      // The coordinates from backend are on the "original" frame.
-      // So we draw them on a mirrored canvas or just draw normally and let the parent handle mirror.
-      // Better: Parent wraps both in scale-x-[-1].
       ctx.strokeRect(left, top, width, height);
       
       // Add a small label
@@ -109,6 +105,10 @@ export default function App() {
 
       <div className="relative z-10 flex flex-col xl:flex-row items-center justify-center p-4 py-8 min-h-screen gap-8">
         
+        {/* Left Side: Video Feed */}
+        <div className="w-full xl:w-1/4 flex flex-col items-center">
+           <div className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-surface-variant/50 mb-4 shadow-xl scale-x-[-1]">
+             <video ref={videoRef} autoPlay muted playsInline className="w-full h-auto max-w-[300px] object-cover" />
              <canvas 
                ref={overlayRef} 
                width={640} 
