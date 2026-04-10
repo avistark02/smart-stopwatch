@@ -1,37 +1,21 @@
 import { useState, useEffect } from 'react';
 import { RotateCcw, Trash2, RefreshCw, Zap } from 'lucide-react';
-
-interface SessionEntry {
-  sensor_id: string;
-  start_time: string;
-  end_time: string;
-  duration: number;
-}
+import { getSessionLog, clearSessionLog, Session } from '../lib/storage';
 
 export default function SessionLog() {
-  const [sessions, setSessions] = useState<SessionEntry[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadSessions = async () => {
+  const loadSessions = () => {
     setLoading(true);
-    try {
-      const res = await fetch('http://localhost:5000/session-log');
-      const data = await res.json();
-      setSessions(Array.isArray(data) ? data.reverse() : []);
-    } catch (err) {
-      console.error('Failed to load sessions:', err);
-    }
-    setLoading(false);
+    setSessions(getSessionLog().reverse());
+    setTimeout(() => setLoading(false), 300); // UI feedback
   };
 
-  const clearSessions = async () => {
+  const clearSessions = () => {
     if (!confirm('Clear all session logs?')) return;
-    try {
-      await fetch('http://localhost:5000/session-log', { method: 'DELETE' });
-      setSessions([]);
-    } catch (err) {
-      console.error('Failed to clear logs:', err);
-    }
+    clearSessionLog();
+    loadSessions();
   };
 
   useEffect(() => {
@@ -87,21 +71,21 @@ export default function SessionLog() {
             </div>
           ) : (
             <ul className="divide-y divide-outline-variant/20">
-              {sessions.map((session, idx) => (
+              {sessions.map((session) => (
                 <li
-                  key={idx}
+                  key={session.id}
                   className="p-4 hover:bg-primary/5 transition-all duration-200 group border-l-2 border-transparent hover:border-secondary"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-secondary font-mono font-semibold group-hover:text-primary transition-colors">
-                        Sensor {session.sensor_id}
+                        Local Browser
                       </p>
                       <div className="flex items-center gap-2 text-xs text-outline-variant mt-2">
                         <span className="px-2 py-1 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10 text-primary/90 font-semibold">
-                          {formatDate(session.start_time)}
+                          {formatDate(session.startTime)}
                         </span>
-                        <span className="group-hover:text-primary/80 transition-colors">{formatTime(session.start_time)} → {formatTime(session.end_time)}</span>
+                        <span className="group-hover:text-primary/80 transition-colors">{formatTime(session.startTime)} → {formatTime(session.endTime)}</span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
