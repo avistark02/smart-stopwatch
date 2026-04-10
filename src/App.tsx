@@ -8,10 +8,12 @@ import { useFaceApi } from './hooks/useFaceApi';
 import { logSession } from './lib/storage';
 
 export default function App() {
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [accumulatedTime, setAccumulatedTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
-  const [sessionStartTime, setSessionStartTime] = useState<string | null>(null);
+  const [sessionISOStart, setSessionISOStart] = useState<string | null>(null);
+  const [sessionTimestamp, setSessionTimestamp] = useState<number | null>(null);
+  const [displayTime, setDisplayTime] = useState(0);
   
   // Custom hook wrapping face-api.js
   const { isLoaded, videoRef, presence, enrollFace, lastFaceLocations } = useFaceApi(selectedPerson);
@@ -27,19 +29,40 @@ export default function App() {
     if (presence === 'active') {
       if (!isRunning) {
         setIsRunning(true);
-        setSessionStartTime(new Date().toISOString());
+        const now = Date.now();
+        setSessionTimestamp(now);
+        setSessionISOStart(new Date().toISOString());
       }
     } else {
       if (isRunning) {
         setIsRunning(false);
-        if (sessionStartTime) {
-          logSession(sessionStartTime, new Date().toISOString());
-          setSessionStartTime(null);
+        if (sessionTimestamp) {
+          const delta = Math.floor((Date.now() - sessionTimestamp) / 1000);
+          setAccumulatedTime(prev => prev + delta);
         }
+        if (sessionISOStart) {
+          logSession(sessionISOStart, new Date().toISOString());
+          setSessionISOStart(null);
+        }
+        setSessionTimestamp(null);
       }
     }
   }, [presence]);
   
+  // Timer Display Update (Drift-Free)
+  useEffect(() => {
+    let interval: number;
+    if (isRunning && sessionTimestamp !== null) {
+      interval = window.setInterval(() => {
+        const currentSessionSeconds = Math.floor((Date.now() - sessionTimestamp) / 1000);
+        setDisplayTime(accumulatedTime + currentSessionSeconds);
+      }, 100); // 10Hz update for smooth UI
+    } else {
+      setDisplayTime(accumulatedTime);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, sessionTimestamp, accumulatedTime]);
+
   // Draw face overlay
   useEffect(() => {
     const canvas = overlayRef.current;
@@ -56,14 +79,11 @@ export default function App() {
     ctx.beginPath();
 
     lastFaceLocations.forEach(loc => {
-      // face_recognition: (top, right, bottom, left)
       const [top, right, bottom, left] = loc;
       const width = right - left;
       const height = bottom - top;
-      
       ctx.strokeRect(left, top, width, height);
       
-      // Add a small label
       ctx.fillStyle = '#3b82f6';
       ctx.fillRect(left, top - 25, 70, 25);
       ctx.fillStyle = 'white';
@@ -72,25 +92,21 @@ export default function App() {
     });
   }, [lastFaceLocations]);
 
-  // Timer effect
-  useEffect(() => {
-    if (!isRunning) return;
-    const interval = setInterval(() => {
-      setElapsedTime((t) => t + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isRunning]);
-
   const handleRestart = () => {
-    setElapsedTime(0);
-    if (isRunning && sessionStartTime) {
-      logSession(sessionStartTime, new Date().toISOString());
-      setSessionStartTime(new Date().toISOString());
+    setAccumulatedTime(0);
+    setDisplayTime(0);
+    if (isRunning) {
+      const now = Date.now();
+      setSessionTimestamp(now);
+      // Log current span and start new one
+      if (sessionISOStart) {
+        logSession(sessionISOStart, new Date().toISOString());
+        setSessionISOStart(new Date().toISOString());
+      }
     }
   };
 
   const handleReconnect = () => {
-    // Only kept for UI compat, face API is always tracking if isLoaded
     console.log("Reconnect requested (Client only mode)");
   };
 
@@ -147,7 +163,7 @@ export default function App() {
 
           <div className="space-y-6">
             <StopwatchDisplay
-              elapsedTime={elapsedTime}
+              elapsedTime={displayTime}
               status={displayStatus}
               disconnected={!isLoaded}
             />
