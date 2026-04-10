@@ -46,26 +46,51 @@ export function useFaceApi(selectedPerson: string | null) {
     loadModels();
   }, []);
 
-  // Detection loop
+  // Camera Initialization (Independent of selectedPerson)
   useEffect(() => {
-    if (!isLoaded || !selectedPerson) return;
+    if (!isLoaded) return;
 
     let stream: MediaStream | null = null;
-    const faceTolerance = 0.45; // Match config.py
-
     const startVideo = async () => {
+      console.log("Initializing camera search...");
       try {
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: { width: 640, height: 480, facingMode: "user" } 
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          console.log("Webcam stream attached successfully.");
         }
-      } catch (err) {
-        console.error("Camera access error:", err);
+      } catch (err: any) {
+        console.error("DETAILED CAMERA ERROR:", {
+          name: err.name,
+          message: err.message,
+          constraint: err.constraint,
+          stack: err.stack
+        });
+        alert(`Camera Error: ${err.message}. Please ensure you are on HTTPS and have granted permissions.`);
         setPresence('error');
       }
     };
+
+    startVideo();
+
+    return () => {
+      if (stream) {
+        console.log("Stopping webcam stream...");
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isLoaded]);
+
+  // Detection loop
+  useEffect(() => {
+    if (!isLoaded || !selectedPerson) {
+      setPresence('idle');
+      return;
+    }
+
+    const faceTolerance = 0.45; // Match config.py
 
     const detect = async () => {
       if (!videoRef.current || videoRef.current.paused || videoRef.current.ended) {
@@ -129,13 +154,10 @@ export function useFaceApi(selectedPerson: string | null) {
       }
     };
 
-    startVideo().then(() => {
-      requestRef.current = requestAnimationFrame(detect);
-    });
+    requestRef.current = requestAnimationFrame(detect);
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      if (stream) stream.getTracks().forEach(track => track.stop());
     };
   }, [isLoaded, selectedPerson, knownDescriptors]);
 

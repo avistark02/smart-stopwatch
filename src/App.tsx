@@ -109,10 +109,6 @@ export default function App() {
 
       <div className="relative z-10 flex flex-col xl:flex-row items-center justify-center p-4 py-8 min-h-screen gap-8">
         
-        {/* Left Side: Video Feed */}
-        <div className="w-full xl:w-1/4 flex flex-col items-center">
-           <div className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-surface-variant/50 hidden xl:block mb-4 shadow-xl scale-x-[-1]">
-             <video ref={videoRef} autoPlay muted playsInline className="w-full h-auto max-w-[300px] object-cover" />
              <canvas 
                ref={overlayRef} 
                width={640} 
