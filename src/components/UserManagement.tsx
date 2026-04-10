@@ -13,14 +13,15 @@ interface Props {
 export default function UserManagement({ selectedPerson, onPersonSelected, enrollFace, isCameraReady }: Props) {
   const [users, setUsers] = useState<AuthorizedUser[]>([]);
 
-  const loadUsers = () => {
-    setUsers(getAuthorizedUsers());
+  const loadUsers = async () => {
+    const loaded = await getAuthorizedUsers();
+    setUsers(loaded);
   };
 
-  const handleRemoveUser = (name: string) => {
+  const handleRemoveUser = async (name: string) => {
     if (!confirm(`Remove ${name} from authorized users?`)) return;
-    removeUser(name);
-    setUsers(getAuthorizedUsers());
+    await removeUser(name);
+    await loadUsers();
     if (selectedPerson === name) onPersonSelected(null);
   };
 

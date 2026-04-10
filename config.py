@@ -1,4 +1,4 @@
-"""Configuration settings for Blinq : Presence time calculator using python and open cv application."""
+"""Configuration settings for Blinq Presence Time Tracker."""
 
 import os
 

@@ -1,4 +1,4 @@
-# Blinq : Presence time calculator using python and open cv
+# Blinq Presence Time Calculator
 
 I built this because I wanted a smarter way to track time — one that doesn't rely on me remembering to start or stop a timer. The idea is simple: the app watches the camera, recognizes your face, and runs the stopwatch only while you're actually there. Walk away, it stops. Come back, it resumes.
 

@@ -1,56 +1,60 @@
+const API_BASE = 'http://127.0.0.1:5000';
+
 export interface Session {
   id: string;
-  startTime: string;
-  endTime: string;
+  start_time: string;
+  end_time: string;
   duration: number;
 }
 
 export interface AuthorizedUser {
   name: string;
-  descriptor: string; // Serialized Float32Array
 }
 
-export function getSessionLog(): Session[] {
-  const data = localStorage.getItem('smart_stopwatch_sessions');
-  return data ? JSON.parse(data) : [];
+export async function getSessionLog(): Promise<Session[]> {
+  try {
+    const res = await fetch(`${API_BASE}/session-log`);
+    return await res.json();
+  } catch (e) {
+    console.error("Failed to fetch session log:", e);
+    return [];
+  }
 }
 
-export function logSession(startTime: string, endTime: string) {
-  const start = new Date(startTime);
-  const end = new Date(endTime);
-  const duration = Math.floor((end.getTime() - start.getTime()) / 1000);
-  
-  const entry: Session = {
-    id: Math.random().toString(36).substring(2, 9),
-    startTime,
-    endTime,
-    duration
-  };
-
-  const sessions = getSessionLog();
-  sessions.push(entry);
-  localStorage.setItem('smart_stopwatch_sessions', JSON.stringify(sessions));
+export async function logSession(startTime: string, endTime: string) {
+  // Backend handles logic automatically if using `status` updates!
+  // This is kept here for manual sync if necessary, but backend already logs it on "active" -> "inactive" transition.
+  console.log("Client noted session span:", startTime, endTime);
 }
 
-export function clearSessionLog() {
-  localStorage.removeItem('smart_stopwatch_sessions');
+export async function clearSessionLog() {
+  await fetch(`${API_BASE}/session-log`, { method: 'DELETE' });
 }
 
-export function getAuthorizedUsers(): AuthorizedUser[] {
-  const data = localStorage.getItem('smart_stopwatch_users');
-  return data ? JSON.parse(data) : [];
+export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
+  try {
+    const res = await fetch(`${API_BASE}/authorized-users`);
+    const arr = await res.json();
+    // Python returns list of strings or list of objects
+    if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') {
+       return arr.map((name: string) => ({ name }));
+    }
+    return arr;
+  } catch (e) {
+    console.error("Failed to fetch authorized users:", e);
+    return [];
+  }
 }
 
-export function enrollUser(name: string, descriptor: Float32Array) {
-  const users = getAuthorizedUsers();
-  users.push({
-    name,
-    descriptor: JSON.stringify(Array.from(descriptor))
+export async function enrollUser(name: string, descriptor: Float32Array) {
+  // Enrollment is now handled via image POST in useFaceApi.ts, descriptor logic is deprecated.
+  console.warn("enrollUser with descriptor deprecated in favor of WebRTC frame submission");
+}
+
+export async function removeUser(name: string) {
+  await fetch(`${API_BASE}/remove-user`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
   });
-  localStorage.setItem('smart_stopwatch_users', JSON.stringify(users));
-}
-
-export function removeUser(name: string) {
-  const users = getAuthorizedUsers().filter(u => u.name !== name);
-  localStorage.setItem('smart_stopwatch_users', JSON.stringify(users));
 }

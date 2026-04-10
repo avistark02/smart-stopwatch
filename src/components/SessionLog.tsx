@@ -6,16 +6,17 @@ export default function SessionLog() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadSessions = () => {
+  const loadSessions = async () => {
     setLoading(true);
-    setSessions(getSessionLog().reverse());
+    const logs = await getSessionLog();
+    setSessions(logs.reverse());
     setTimeout(() => setLoading(false), 300); // UI feedback
   };
 
-  const clearSessions = () => {
+  const clearSessions = async () => {
     if (!confirm('Clear all session logs?')) return;
-    clearSessionLog();
-    loadSessions();
+    await clearSessionLog();
+    await loadSessions();
   };
 
   useEffect(() => {
@@ -83,9 +84,9 @@ export default function SessionLog() {
                       </p>
                       <div className="flex items-center gap-2 text-xs text-outline-variant mt-2">
                         <span className="px-2 py-1 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10 text-primary/90 font-semibold">
-                          {formatDate(session.startTime)}
+                          {formatDate(session.start_time)}
                         </span>
-                        <span className="group-hover:text-primary/80 transition-colors">{formatTime(session.startTime)} → {formatTime(session.endTime)}</span>
+                        <span className="group-hover:text-primary/80 transition-colors">{formatTime(session.start_time)} → {formatTime(session.end_time)}</span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">

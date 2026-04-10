@@ -98,11 +98,11 @@ export default function App() {
               </div>
             </div>
             <h1 className="text-5xl font-black bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent font-headline mb-2">
-              Study Tracker
+              Blinq Presence Time Calculator
             </h1>
             <p className="text-outline-variant font-label text-lg flex items-center justify-center gap-2">
               <Zap className="w-5 h-5 text-secondary" />
-              AI-Powered Presence Detection (Client side)
+              AI-Powered Serverless Presence Detection
             </p>
           </div>
 

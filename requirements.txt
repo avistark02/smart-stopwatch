@@ -1,8 +1,11 @@
-face_recognition
-Pillow
+Flask
 opencv-python
-requests
-flask
-flask-cors
+numpy
+Pillow
 dlib
+face-recognition-models
+gunicorn
+flask-cors
 cryptography
+face_recognition
+requests

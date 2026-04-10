@@ -9,8 +9,16 @@ import time
 import logging
 from werkzeug.utils import secure_filename
 import tempfile
+import cv2
+import numpy as np
 
-from detect_and_send import enroll_face, enroll_from_image
+try:
+    import face_recognition
+    USE_FACE_RECOG = True
+except ImportError:
+    USE_FACE_RECOG = False
+
+from detect_and_send import enroll_from_image
 from storage import (
     load_authorized_users,
     load_known_faces,
@@ -20,8 +28,6 @@ from storage import (
 from config import (
     BUFFER_TIME,
     FACE_TOLERANCE,
-    CAMERA_RETRY_INTERVAL,
-    CAMERA_MAX_RETRIES,
     LOG_LEVEL,
     LOG_FILE,
     SENSOR_ID,
@@ -37,17 +43,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:5000"]}})
 
 status_lock = threading.Lock()
 session_lock = threading.Lock()
 status = {"Presence": "inactive", "who": None}
 selected_person = None
 selected_person_lock = threading.Lock()
-enrollment_active_event = threading.Event()
 
 session_tracker = {}
-
+last_detected = 0
 
 def load_json(path):
     if not os.path.exists(path):
@@ -59,14 +64,12 @@ def load_json(path):
         except json.JSONDecodeError:
             return [] if path == SESSION_LOG_FILE else {}
 
-
 def save_json(path, data):
     dir_name = os.path.dirname(os.path.abspath(path))
     fd, temp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
     os.replace(temp_path, path)
-
 
 def log_session(sensor_id, start, end):
     duration = int((end - start).total_seconds())
@@ -79,8 +82,7 @@ def log_session(sensor_id, start, end):
     log = load_json(SESSION_LOG_FILE)
     log.append(entry)
     save_json(SESSION_LOG_FILE, log)
-    logging.info(f"Logged session: {entry}")
-
+    logger.info(f"Logged session: {entry}")
 
 def set_presence_status(presence: str, who: str = None):
     """Update in-memory status, persist to status.json, and track session durations."""
@@ -105,140 +107,15 @@ def set_presence_status(presence: str, who: str = None):
             if sid in session_tracker:
                 log_session(sid, session_tracker.pop(sid), now)
 
-
 def get_selected_person() -> str:
     with selected_person_lock:
         return selected_person
-
 
 def set_selected_person(person: str):
     global selected_person
     with selected_person_lock:
         selected_person = person
         logger.info(f"Selected person changed to: {person}")
-
-
-def monitor_proximity():
-    """Monitor camera for selected person presence with error recovery."""
-    logger.info("Monitor thread started")
-    try:
-        import cv2
-
-        logger.info("cv2 imported OK")
-    except Exception as e:
-        logger.error(f"Failed to import cv2: {e}")
-        return
-    try:
-        import face_recognition
-
-        logger.info("face_recognition imported OK")
-    except ImportError as e:
-        logger.error(f"face_recognition not available: {e}")
-        return
-
-    retry_count = 0
-
-    while True:
-        if enrollment_active_event.is_set():
-            time.sleep(0.5)
-            continue
-
-        cap = None
-        try:
-            time.sleep(1)
-            logger.info("Attempting to open camera...")
-            cap = cv2.VideoCapture(0)
-
-            if not cap.isOpened():
-                retry_count += 1
-                logger.warning(
-                    f"Camera could not be opened, retry {retry_count}/{CAMERA_MAX_RETRIES}"
-                )
-                if retry_count >= CAMERA_MAX_RETRIES:
-                    logger.error("Camera failed repeatedly. Is another app using it?")
-                    set_presence_status("inactive")
-                    retry_count = 0
-                    time.sleep(10)
-                else:
-                    time.sleep(CAMERA_RETRY_INTERVAL)
-                continue
-
-            retry_count = 0
-            logger.info("Camera opened successfully")
-            last_detected = 0
-
-            while True:
-                if enrollment_active_event.is_set():
-                    logger.info("Enrollment active, pausing monitor camera.")
-                    break
-
-                ret, frame = cap.read()
-                if not ret or frame is None:
-                    logger.warning("Failed to read frame, reconnecting")
-                    break
-
-                person = get_selected_person()
-                if person is None:
-                    set_presence_status("inactive")
-                    time.sleep(0.5)
-                    continue
-
-                known_faces = load_known_faces()
-                if person not in known_faces:
-                    logger.warning(f"No encoding for '{person}' — please enroll first")
-                    set_presence_status("inactive")
-                    time.sleep(0.5)
-                    continue
-
-                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                face_locations = face_recognition.face_locations(rgb)
-                face_encodings = face_recognition.face_encodings(rgb, face_locations)
-
-                if not face_locations:
-                    now = time.time()
-                    if now - last_detected > BUFFER_TIME:
-                        set_presence_status("inactive")
-                    time.sleep(0.5)
-                    continue
-
-                target_encoding = known_faces[person]
-                authorized_present = False
-
-                for face_encoding in face_encodings:
-                    distance = face_recognition.face_distance(
-                        [target_encoding], face_encoding
-                    )[0]
-                    logger.debug(
-                        f"Face distance for '{person}': {distance:.3f} (threshold: {FACE_TOLERANCE})"
-                    )
-                    if distance < FACE_TOLERANCE:
-                        authorized_present = True
-                        break
-
-                now = time.time()
-                if authorized_present:
-                    if now - last_detected > BUFFER_TIME:
-                        set_presence_status("active", person)
-                        logger.info(f"Authorized: {person} (detected)")
-                    last_detected = now
-                else:
-                    if face_encodings:
-                        set_presence_status("error", "unauthorized")
-                        logger.warning(
-                            f"Unauthorized face detected (expected: {person})"
-                        )
-                    last_detected = now
-
-                time.sleep(0.5)
-
-        except Exception as e:
-            logger.error(f"Monitor thread error: {e}", exc_info=True)
-            set_presence_status("inactive")
-            time.sleep(CAMERA_RETRY_INTERVAL)
-        finally:
-            if cap is not None:
-                cap.release()
-                logger.info("Camera released")
 
 
 @app.route("/")
@@ -250,7 +127,6 @@ def home():
 def get_status():
     with status_lock:
         return jsonify(status)
-
 
 @app.route("/status", methods=["POST"])
 def post_sensor_status():
@@ -303,7 +179,6 @@ def post_sensor_status():
     save_json(STATUS_FILE, file_data)
     return "", 204
 
-
 @app.route("/status/<sensor_id>", methods=["GET"])
 def get_status_by_id(sensor_id):
     with status_lock:
@@ -317,46 +192,85 @@ def get_status_by_id(sensor_id):
         return jsonify({"Presence": entry, "who": None})
     return jsonify({"Presence": "inactive", "who": None})
 
-
 @app.route("/session-log", methods=["GET"])
 def get_session_log():
     return jsonify(load_json(SESSION_LOG_FILE))
 
-
 @app.route("/session-log", methods=["DELETE"])
 def delete_session_log():
     save_json(SESSION_LOG_FILE, [])
-    logging.info("Session log cleared.")
+    logger.info("Session log cleared.")
     return "", 204
-
 
 @app.route("/authorized-users", methods=["GET"])
 def get_authorized_users():
     users = load_authorized_users()
     return jsonify(users)
 
+@app.route("/process-frame", methods=["POST"])
+def process_frame():
+    global last_detected
+    if not USE_FACE_RECOG:
+        return jsonify({"success": False, "message": "Face recognition models missing"}), 500
 
-@app.route("/enroll", methods=["POST"])
-def api_enroll():
-    data = request.json
-    name = normalize_name(data.get("name") or "")
-    if not name:
-        return jsonify({"success": False, "message": "Name is required"}), 400
+    f = request.files.get("frame")
+    person = request.form.get("selected_person") or get_selected_person()
+    
+    if not person:
+        set_presence_status("inactive")
+        return jsonify({"presence": "inactive"})
+
+    known_faces = load_known_faces()
+    if person not in known_faces:
+        set_presence_status("inactive")
+        return jsonify({"presence": "inactive"})
         
-    enrollment_active_event.set()
-    time.sleep(1.0)  # Give monitor thread time to detect event and release camera
-    try:
-        success, message = enroll_face(name, timeout=30)
-    except Exception as e:
-        logger.error(f"Enrollment error for {name}: {e}")
-        return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        enrollment_active_event.clear()
+    if not f:
+        set_presence_status("inactive")
+        return jsonify({"presence": "inactive", "error": "No frame received"}), 400
+
+    # Read image from memory
+    npimg = np.frombuffer(f.read(), np.uint8)
+    frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    
+    if frame is None:
+        return jsonify({"presence": "inactive", "error": "Invalid frame"}), 400
+
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    face_locations = face_recognition.face_locations(rgb)
+    face_encodings = face_recognition.face_encodings(rgb, face_locations)
+
+    now = time.time()
+    
+    if not face_locations:
+        if now - last_detected > BUFFER_TIME:
+            set_presence_status("inactive")
+            return jsonify({"presence": "inactive"})
+        return jsonify({"presence": status["Presence"]})
+
+    target_encoding = known_faces[person]
+    authorized_present = False
+
+    for face_encoding in face_encodings:
+        distance = face_recognition.face_distance([target_encoding], face_encoding)[0]
+        logger.debug(f"Face distance for '{person}': {distance:.3f} (thresh: {FACE_TOLERANCE})")
         
-    if not success:
-        return jsonify({"success": False, "message": message}), 400
-    logger.info(f"Successfully enrolled: {name}")
-    return jsonify({"success": True, "message": message})
+        if distance < FACE_TOLERANCE:
+            authorized_present = True
+            break
+            
+    if authorized_present:
+        if now - last_detected > BUFFER_TIME:
+            set_presence_status("active", person)
+            logger.info(f"Authorized: {person} detected via client-frame.")
+        last_detected = now
+        return jsonify({"presence": "active"})
+    else:
+        if face_encodings:
+            set_presence_status("error", "unauthorized")
+            logger.warning(f"Unauthorized face detected via client-frame (expected: {person})")
+        last_detected = now
+        return jsonify({"presence": "error"})
 
 
 @app.route("/enroll-image", methods=["POST"])
@@ -385,9 +299,13 @@ def api_enroll_photo():
         return jsonify({"success": False, "message": "Name is required"}), 400
     f = request.files.get("photo")
     if not f or not f.filename:
-        return jsonify({"success": False, "message": "photo file required"}), 400
+        # Fallback to accepting a blob directly from WEBRTC
+        f = request.files.get("frame")
+        if not f:
+            return jsonify({"success": False, "message": "photo/frame file required"}), 400
+            
     path = os.path.join(
-        tempfile.gettempdir(), secure_filename(f.filename) or "upload.jpg"
+        tempfile.gettempdir(), secure_filename(f.filename or name + "_enroll.jpg") or "upload.jpg"
     )
     f.save(path)
     try:
@@ -433,23 +351,19 @@ def select_user():
     set_selected_person(None)
     return jsonify({"success": False, "message": "Unknown user"}), 400
 
-
 @app.route("/selected-user", methods=["GET"])
 def get_selected_user():
     return jsonify({"selected": get_selected_person()})
 
-
 def open_browser():
     try:
-        webbrowser.open("http://127.0.0.1:5000")
-        logging.info("Browser launched.")
+        webbrowser.open("http://127.0.0.1:3000")
+        logger.info("Browser launched.")
     except Exception as e:
-        logging.error(f"Failed to open browser: {e}")
-
+        logger.error(f"Failed to open browser: {e}")
 
 if __name__ == "__main__":
-    threading.Thread(target=monitor_proximity, daemon=True).start()
-    logging.info("Starting Flask app...")
+    logger.info("Starting Flask application API (Serverless Ready)...")
     threading.Timer(1.25, open_browser).start()
     app.run(
         host="0.0.0.0",

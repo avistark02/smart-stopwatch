@@ -78,6 +78,8 @@ secret.key
 # =========================
 Project_Report.md
 Project_Report_Extended.md
+Project_Report_Extended.pdf
+*.pdf
 
 # =========================
 # Node.js & Vite
@@ -85,3 +87,4 @@ Project_Report_Extended.md
 node_modules/
 ts_errors.*
 vite_error.*
+*.tsbuildinfo
