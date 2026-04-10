@@ -2,8 +2,12 @@
 
 import os
 
-# Project root (folder containing this file) — stable paths even if cwd differs when running `python app.py`
+# Project root (folder containing this file)
 _ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Vercel Environment Detection
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+_DATA_DIR = "/tmp" if IS_VERCEL else _ROOT
 
 # Face Recognition
 FACE_TOLERANCE = 0.45          # Detection: stricter match needed to recognize a known person
@@ -25,12 +29,12 @@ CAMERA_MAX_RETRIES = 5  # Maximum attempts before longer wait
 SENSOR_ID = "123"
 SERVER_URL = "http://127.0.0.1:5000/status"
 
-# File Paths (anchored to project root so thumbnails and data files are always found)
-KNOWN_FACES_FILE = os.path.join(_ROOT, "known_faces.pkl")
-AUTHORIZED_USERS_FILE = os.path.join(_ROOT, "authorized_users.json")
-ENROLLED_THUMBS_DIR = os.path.join(_ROOT, "enrolled_thumbnails")
-STATUS_FILE = os.path.join(_ROOT, "status.json")
-SESSION_LOG_FILE = os.path.join(_ROOT, "session_log.json")
+# File Paths (anchored to _DATA_DIR for Vercel/Production compatibility)
+KNOWN_FACES_FILE = os.path.join(_DATA_DIR, "known_faces.pkl")
+AUTHORIZED_USERS_FILE = os.path.join(_DATA_DIR, "authorized_users.json")
+ENROLLED_THUMBS_DIR = os.path.join(_DATA_DIR, "enrolled_thumbnails")
+STATUS_FILE = os.path.join(_DATA_DIR, "status.json")
+SESSION_LOG_FILE = os.path.join(_DATA_DIR, "session_log.json")
 
 # Enrollment
 ENROLLMENT_TIMEOUT = 30
@@ -39,5 +43,5 @@ ENROLLMENT_FACE_SIZE_MAX = (350, 350)
 
 # Logging
 LOG_LEVEL = "DEBUG"
-LOG_FILE = os.path.join(_ROOT, "blinq.log")
-DEBUG_DIR = os.path.join(_ROOT, "debug")
+LOG_FILE = os.path.join(_DATA_DIR, "blinq.log")
+DEBUG_DIR = os.path.join(_DATA_DIR, "debug")

@@ -55,7 +55,7 @@ export function useFaceApi(selectedPerson: string | null) {
 
           try {
             // Relative paths for Vercel/proxied local dev
-            const response = await fetch('/process-frame', {
+            const response = await fetch('/api/process-frame', {
               method: 'POST',
               body: formData
             });
@@ -123,7 +123,7 @@ export function useFaceApi(selectedPerson: string | null) {
 
         try {
           // Relative path for enrollment as well
-          const res = await fetch('/enroll-photo', {
+          const res = await fetch('/api/enroll-photo', {
             method: 'POST',
             body: formData,
           });
