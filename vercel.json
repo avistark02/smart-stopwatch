@@ -2,7 +2,7 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/(process-frame|enroll-photo|status|session-log|authorized-users|select-user|selected-user|remove-user)(.*)",
+      "source": "/api/(.*)",
       "destination": "/api/index.py"
     },
     {
