@@ -1,7 +1,4 @@
 Flask
-opencv-python-headless
-numpy
-Pillow
 flask-cors
 cryptography
 requests
