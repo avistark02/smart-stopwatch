@@ -36,7 +36,6 @@ export default function App() {
       if (isRunning) {
         setIsRunning(false);
         if (sessionTimestamp) {
-          // Use Math.round for consistent accumulation with the display logic
           const delta = Math.round((Date.now() - sessionTimestamp) / 1000);
           setAccumulatedTime(prev => prev + delta);
         }
@@ -53,7 +52,6 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (isRunning && sessionTimestamp) {
-        // Higher frequency update (100ms) with Math.round for "consecutive" feel
         const elapsed = Math.round((Date.now() - sessionTimestamp) / 1000);
         setDisplayTime(accumulatedTime + elapsed);
       } else {
@@ -189,3 +187,8 @@ export default function App() {
   );
 }
 
+function presentationColor(s: string) {
+  if (s === 'running') return 'bg-green-500 shadow-[0_0_10px_#22c55e]';
+  if (s === 'unauthorized') return 'bg-red-500 shadow-[0_0_10px_#ef4444]';
+  return 'bg-blue-500 shadow-[0_0_10px_#3b82f6]';
+}
