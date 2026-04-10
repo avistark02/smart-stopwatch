@@ -46,7 +46,7 @@ export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
   }
 }
 
-export async function enrollUser(name: string, descriptor: Float32Array) {
+export async function enrollUser(_name: string, _descriptor: Float32Array) {
   // Enrollment is now handled via image POST in useFaceApi.ts, descriptor logic is deprecated.
   console.warn("enrollUser with descriptor deprecated in favor of WebRTC frame submission");
 }

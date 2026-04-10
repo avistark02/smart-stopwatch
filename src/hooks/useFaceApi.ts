@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 export function useFaceApi(selectedPerson: string | null) {
-  const [isLoaded, setIsLoaded] = useState(true); // No local ML models to load anymore
+  const isLoaded = true; // No local ML models to load anymore
   const [presence, setPresence] = useState<'idle' | 'active' | 'error'>('idle');
   const [detectedUser, setDetectedUser] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
