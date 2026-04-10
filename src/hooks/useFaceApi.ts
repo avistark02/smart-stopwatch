@@ -3,6 +3,7 @@ import * as faceapi from 'face-api.js';
 
 export function useFaceApi(selectedPerson: string | null) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [presence, setPresence] = useState<'idle' | 'active' | 'error'>('idle');
   const [detectedUser, setDetectedUser] = useState<string | null>(null);
   const [lastFaceLocations, setLastFaceLocations] = useState<number[][]>([]);
@@ -46,29 +47,32 @@ export function useFaceApi(selectedPerson: string | null) {
     loadModels();
   }, []);
 
-  // Camera Initialization (Independent of selectedPerson)
+  // Camera Initialization
   useEffect(() => {
     if (!isLoaded) return;
 
     let stream: MediaStream | null = null;
     const startVideo = async () => {
-      console.log("Initializing camera search...");
       try {
+        console.log("Requesting camera access...");
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: { width: 640, height: 480, facingMode: "user" } 
         });
+        
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          console.log("Webcam stream attached successfully.");
+          // Wait for video to be ready
+          videoRef.current.onloadedmetadata = () => {
+            console.log("Video metadata loaded. Starting play...");
+            videoRef.current?.play().then(() => {
+              console.log("Video playing. Camera ready.");
+              setIsVideoReady(true);
+            }).catch(e => console.error("Video play error:", e));
+          };
         }
       } catch (err: any) {
-        console.error("DETAILED CAMERA ERROR:", {
-          name: err.name,
-          message: err.message,
-          constraint: err.constraint,
-          stack: err.stack
-        });
-        alert(`Camera Error: ${err.message}. Please ensure you are on HTTPS and have granted permissions.`);
+        console.error("Camera access error:", err);
+        alert(`Camera Error: ${err.message}. Ensure HTTPS and permissions.`);
         setPresence('error');
       }
     };
@@ -77,23 +81,23 @@ export function useFaceApi(selectedPerson: string | null) {
 
     return () => {
       if (stream) {
-        console.log("Stopping webcam stream...");
         stream.getTracks().forEach(track => track.stop());
       }
+      setIsVideoReady(false);
     };
   }, [isLoaded]);
 
   // Detection loop
   useEffect(() => {
-    if (!isLoaded || !selectedPerson) {
-      setPresence('idle');
+    if (!isLoaded || !selectedPerson || !isVideoReady) {
+      if (!selectedPerson) setPresence('idle');
       return;
     }
 
-    const faceTolerance = 0.45; // Match config.py
+    const faceTolerance = 0.45;
 
     const detect = async () => {
-      if (!videoRef.current || videoRef.current.paused || videoRef.current.ended) {
+      if (!videoRef.current || videoRef.current.paused || videoRef.current.ended || videoRef.current.readyState < 2) {
         requestRef.current = requestAnimationFrame(detect);
         return;
       }
@@ -132,7 +136,7 @@ export function useFaceApi(selectedPerson: string | null) {
       setPresence(newPresence);
       setDetectedUser(matched ? selectedPerson : null);
 
-      // Sync status with backend periodically (every 2 seconds)
+      // Sync status with backend periodically
       const now = Date.now();
       if (now - lastSyncRef.current > 2000) {
         syncPresence(newPresence, matched ? selectedPerson : null);
@@ -159,22 +163,29 @@ export function useFaceApi(selectedPerson: string | null) {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [isLoaded, selectedPerson, knownDescriptors]);
+  }, [isLoaded, isVideoReady, selectedPerson, knownDescriptors]);
 
   const enrollFace = async (name: string): Promise<{ success: boolean; message?: string }> => {
-    if (!videoRef.current || !isLoaded) return { success: false, message: "AI Models not ready" };
+    if (!videoRef.current || !isLoaded || !isVideoReady) {
+       return { success: false, message: "Camera or AI models not ready. Please wait." };
+    }
     
+    if (videoRef.current.readyState < 2) {
+       return { success: false, message: "Video stream initializing. Please try again in a moment." };
+    }
+
     try {
+      console.log(`Starting enrollment for: ${name}`);
       const detection = await faceapi.detectSingleFace(
         videoRef.current, 
         new faceapi.TinyFaceDetectorOptions()
       ).withFaceLandmarks().withFaceDescriptor();
 
       if (!detection) {
-        return { success: false, message: "No face detected. Please look clearly at the camera." };
+        return { success: false, message: "No face detected. Look directly at the camera with good lighting." };
       }
 
-      // Send the high-quality 128-float descriptor to the backend
+      console.log("Face detected. Sending descriptor to backend...");
       const res = await fetch('/api/enroll-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -186,18 +197,17 @@ export function useFaceApi(selectedPerson: string | null) {
       
       const data = await res.json();
       if (data.success) {
-        // Update local reference so recognition works immediately
         setKnownDescriptors(prev => ({
           ...prev,
           [name.toLowerCase()]: Array.from(detection.descriptor)
         }));
       }
       return { success: data.success, message: data.message };
-    } catch (e) {
-      console.error("Enrollment error:", e);
-      return { success: false, message: "Client-side enrollment failed." };
+    } catch (e: any) {
+      console.error("Enrollment Exception:", e);
+      return { success: false, message: `Enrollment Error: ${e.message || "Unknown error"}` };
     }
   };
 
-  return { isLoaded, videoRef, presence, detectedUser, enrollFace, lastFaceLocations };
+  return { isLoaded, isVideoReady, videoRef, presence, detectedUser, enrollFace, lastFaceLocations };
 }
