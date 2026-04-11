@@ -12,7 +12,7 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const [sessionISOStart, setSessionISOStart] = useState<string | null>(null);
-  const [sessionTimestamp, setSessionTimestamp] = useState<number | null>(null);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [displayTime, setDisplayTime] = useState(0);
   
   // Custom hook wrapping face-api.js
@@ -29,38 +29,38 @@ export default function App() {
     if (presence === 'active') {
       if (!isRunning) {
         setIsRunning(true);
-        setSessionTimestamp(Date.now());
+        setSessionStartTime(Date.now());
         setSessionISOStart(new Date().toISOString());
       }
     } else {
       if (isRunning) {
         setIsRunning(false);
-        if (sessionTimestamp) {
-          const delta = Math.round((Date.now() - sessionTimestamp) / 1000);
+        if (sessionStartTime) {
+          const delta = (Date.now() - sessionStartTime) / 1000;
           setAccumulatedTime(prev => prev + delta);
         }
         if (sessionISOStart) {
           logSession(sessionISOStart, new Date().toISOString());
           setSessionISOStart(null);
         }
-        setSessionTimestamp(null);
+        setSessionStartTime(null);
       }
     }
-  }, [presence, isRunning, sessionTimestamp, sessionISOStart]);
+  }, [presence, isRunning, sessionStartTime, sessionISOStart]);
   
-  // Timer Display Update (Smooth & Drift-Free)
+  // Timer Display Update (Drift-Free)
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isRunning && sessionTimestamp) {
-        const elapsed = Math.round((Date.now() - sessionTimestamp) / 1000);
+      if (isRunning && sessionStartTime) {
+        const elapsed = (Date.now() - sessionStartTime) / 1000;
         setDisplayTime(accumulatedTime + elapsed);
       } else {
         setDisplayTime(accumulatedTime);
       }
-    }, 100);
+    }, 1000); // update once per second
 
     return () => clearInterval(interval);
-  }, [isRunning, sessionTimestamp, accumulatedTime]);
+  }, [isRunning, sessionStartTime, accumulatedTime]);
 
   // Draw face overlay
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function App() {
     setAccumulatedTime(0);
     setDisplayTime(0);
     if (isRunning) {
-      setSessionTimestamp(Date.now());
+      setSessionStartTime(Date.now());
       if (sessionISOStart) {
         logSession(sessionISOStart, new Date().toISOString());
         setSessionISOStart(new Date().toISOString());
