@@ -68,8 +68,9 @@ export default function App() {
   const handleRestart = () => {
     resetStopwatch();
     if (sessionISOStart) {
-      logSession(sessionISOStart, new Date().toISOString());
-      setSessionISOStart(isActive ? new Date().toISOString() : null);
+      const now = new Date().toISOString();
+      logSession(sessionISOStart, now);
+      setSessionISOStart(isActive ? now : null);
     }
   };
 
