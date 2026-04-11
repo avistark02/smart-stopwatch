@@ -1,5 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import * as faceapi from 'face-api.js';
+
+/** Grace period (ms) before going idle/error after losing the matched face.
+ *  Prevents presence flickering that causes timer jumps. */
+const PRESENCE_GRACE_MS = 2000;
+
+/** Euclidean distance threshold for face matching */
+const FACE_TOLERANCE = 0.45;
+
+/** Minimum ms between detection loop iterations (throttle) */
+const DETECT_INTERVAL_MS = 500;
 
 export function useFaceApi(selectedPerson: string | null) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -12,6 +22,11 @@ export function useFaceApi(selectedPerson: string | null) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const requestRef = useRef<number | null>(null);
   const lastSyncRef = useRef<number>(0);
+
+  // Grace-period refs for stable presence
+  const lastMatchedPresenceRef = useRef<'idle' | 'active' | 'error'>('idle');
+  const lastMatchTimeRef = useRef<number>(0);
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load models on mount
   useEffect(() => {
@@ -87,26 +102,76 @@ export function useFaceApi(selectedPerson: string | null) {
     };
   }, [isLoaded]);
 
-  // Detection loop
+  /**
+   * Stable presence updater with grace period.
+   * Going from idle/error → active is INSTANT (start timer immediately).
+   * Going from active → idle/error is DELAYED by PRESENCE_GRACE_MS
+   * so brief detection misses don't flicker the stopwatch.
+   */
+  const updatePresenceStable = useCallback((rawPresence: 'idle' | 'active' | 'error') => {
+    // Clear any pending grace timer
+    if (graceTimerRef.current) {
+      clearTimeout(graceTimerRef.current);
+      graceTimerRef.current = null;
+    }
+
+    if (rawPresence === 'active') {
+      // Immediately go active — no delay
+      lastMatchedPresenceRef.current = 'active';
+      lastMatchTimeRef.current = Date.now();
+      setPresence('active');
+    } else {
+      // Only downgrade after grace period
+      if (lastMatchedPresenceRef.current === 'active') {
+        const elapsed = Date.now() - lastMatchTimeRef.current;
+        const remaining = PRESENCE_GRACE_MS - elapsed;
+
+        if (remaining <= 0) {
+          // Grace period already expired
+          lastMatchedPresenceRef.current = rawPresence;
+          setPresence(rawPresence);
+        } else {
+          // Wait remaining grace period before downgrading
+          graceTimerRef.current = setTimeout(() => {
+            lastMatchedPresenceRef.current = rawPresence;
+            setPresence(rawPresence);
+            graceTimerRef.current = null;
+          }, remaining);
+        }
+      } else {
+        // Not currently active, update immediately
+        lastMatchedPresenceRef.current = rawPresence;
+        setPresence(rawPresence);
+      }
+    }
+  }, []);
+
+  // Detection loop — throttled to DETECT_INTERVAL_MS
   useEffect(() => {
     if (!isLoaded || !selectedPerson || !isVideoReady) {
       if (!selectedPerson) setPresence('idle');
       return;
     }
 
-    const faceTolerance = 0.45;
+    let cancelled = false;
 
     const detect = async () => {
+      if (cancelled) return;
+
       if (!videoRef.current || videoRef.current.paused || videoRef.current.ended || videoRef.current.readyState < 2) {
         requestRef.current = requestAnimationFrame(detect);
         return;
       }
+
+      const loopStart = Date.now();
 
       // Detection
       const detections = await faceapi.detectAllFaces(
         videoRef.current, 
         new faceapi.TinyFaceDetectorOptions()
       ).withFaceLandmarks().withFaceDescriptors();
+
+      if (cancelled) return;
 
       // Update UI boxes
       const boxes = detections.map(d => [
@@ -125,7 +190,7 @@ export function useFaceApi(selectedPerson: string | null) {
         const target = new Float32Array(targetDescriptor);
         for (const det of detections) {
           const distance = faceapi.euclideanDistance(det.descriptor, target);
-          if (distance < faceTolerance) {
+          if (distance < FACE_TOLERANCE) {
             matched = true;
             break;
           }
@@ -133,7 +198,7 @@ export function useFaceApi(selectedPerson: string | null) {
       }
 
       const newPresence = matched ? 'active' : (detections.length > 0 ? 'error' : 'idle');
-      setPresence(newPresence);
+      updatePresenceStable(newPresence);
       setDetectedUser(matched ? selectedPerson : null);
 
       // Sync status with backend periodically
@@ -143,7 +208,14 @@ export function useFaceApi(selectedPerson: string | null) {
         lastSyncRef.current = now;
       }
 
-      requestRef.current = requestAnimationFrame(detect);
+      // Throttle: wait at least DETECT_INTERVAL_MS between iterations
+      const elapsed = Date.now() - loopStart;
+      const delay = Math.max(0, DETECT_INTERVAL_MS - elapsed);
+      setTimeout(() => {
+        if (!cancelled) {
+          requestRef.current = requestAnimationFrame(detect);
+        }
+      }, delay);
     };
 
     const syncPresence = async (p: string, user: string | null) => {
@@ -161,10 +233,22 @@ export function useFaceApi(selectedPerson: string | null) {
     requestRef.current = requestAnimationFrame(detect);
 
     return () => {
+      cancelled = true;
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (graceTimerRef.current) {
+        clearTimeout(graceTimerRef.current);
+        graceTimerRef.current = null;
+      }
     };
-  }, [isLoaded, isVideoReady, selectedPerson, knownDescriptors]);
+  }, [isLoaded, isVideoReady, selectedPerson, knownDescriptors, updatePresenceStable]);
 
+  /**
+   * Enroll a face from the current webcam frame.
+   * Guards:
+   *  1. Multiple faces → warning
+   *  2. Already-enrolled face → warning
+   *  3. No face → warning
+   */
   const enrollFace = async (name: string): Promise<{ success: boolean; message?: string }> => {
     if (!videoRef.current || !isLoaded || !isVideoReady) {
        return { success: false, message: "Camera or AI models not ready. Please wait." };
@@ -176,22 +260,49 @@ export function useFaceApi(selectedPerson: string | null) {
 
     try {
       console.log(`Starting enrollment for: ${name}`);
-      const detection = await faceapi.detectSingleFace(
-        videoRef.current, 
-        new faceapi.TinyFaceDetectorOptions()
-      ).withFaceLandmarks().withFaceDescriptor();
 
-      if (!detection) {
+      // ── Guard 1: Check for multiple faces ──────────────────
+      const allDetections = await faceapi.detectAllFaces(
+        videoRef.current,
+        new faceapi.TinyFaceDetectorOptions()
+      ).withFaceLandmarks().withFaceDescriptors();
+
+      if (allDetections.length === 0) {
         return { success: false, message: "No face detected. Look directly at the camera with good lighting." };
       }
 
+      if (allDetections.length > 1) {
+        return {
+          success: false,
+          message: `⚠️ Multiple faces detected (${allDetections.length}). Please ensure only ONE face is visible in the frame during enrollment.`
+        };
+      }
+
+      const detection = allDetections[0];
+      const newDescriptor = detection.descriptor;
+
+      // ── Guard 2: Check for already-enrolled face ───────────
+      for (const [existingName, existingDesc] of Object.entries(knownDescriptors)) {
+        const distance = faceapi.euclideanDistance(
+          newDescriptor,
+          new Float32Array(existingDesc)
+        );
+        if (distance < FACE_TOLERANCE) {
+          return {
+            success: false,
+            message: `⚠️ This face is already enrolled as "${existingName}". Each person can only be enrolled once.`
+          };
+        }
+      }
+
+      // ── Proceed with enrollment ────────────────────────────
       console.log("Face detected. Sending descriptor to backend...");
       const res = await fetch('/api/enroll-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          descriptor: Array.from(detection.descriptor)
+          descriptor: Array.from(newDescriptor)
         }),
       });
       
@@ -199,7 +310,7 @@ export function useFaceApi(selectedPerson: string | null) {
       if (data.success) {
         setKnownDescriptors(prev => ({
           ...prev,
-          [name.toLowerCase()]: Array.from(detection.descriptor)
+          [name.toLowerCase()]: Array.from(newDescriptor)
         }));
       }
       return { success: data.success, message: data.message };

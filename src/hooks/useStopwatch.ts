@@ -55,7 +55,7 @@ export function useStopwatch(active: boolean) {
     // Immediate first tick so there's no 1-second blank
     tick();
 
-    const id = setInterval(tick, 1000);
+    const id = setInterval(tick, 250); // tick frequently for smooth second transitions
     return () => clearInterval(id);
   }, []);          // runs once — refs keep it up-to-date
 
