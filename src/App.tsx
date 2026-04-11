@@ -1,66 +1,40 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Clock, Zap } from 'lucide-react';
 import StopwatchDisplay from './components/StopwatchDisplay';
 import Controls from './components/Controls';
 import SessionLog from './components/SessionLog';
 import UserManagement from './components/UserManagement';
 import { useFaceApi } from './hooks/useFaceApi';
+import { useStopwatch } from './hooks/useStopwatch';
 import { logSession } from './lib/storage';
 
 export default function App() {
-  const [accumulatedTime, setAccumulatedTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const [sessionISOStart, setSessionISOStart] = useState<string | null>(null);
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [displayTime, setDisplayTime] = useState(0);
-  
+
   // Custom hook wrapping face-api.js
   const { isLoaded, videoRef, presence, enrollFace, lastFaceLocations } = useFaceApi(selectedPerson);
   const overlayRef = useRef<HTMLCanvasElement>(null);
+
+  // Drift-free stopwatch — only depends on whether presence is active
+  const isActive = presence === 'active';
+  const { seconds: displayTime, reset: resetStopwatch } = useStopwatch(isActive);
 
   // Status mapping
   let displayStatus: 'idle' | 'running' | 'unauthorized' = 'idle';
   if (presence === 'active') displayStatus = 'running';
   else if (presence === 'error') displayStatus = 'unauthorized';
 
-  // Face Detection / Presence Effect logic
+  // Session logging — track ISO start/end for the session log
   useEffect(() => {
-    if (presence === 'active') {
-      if (!isRunning) {
-        setIsRunning(true);
-        setSessionStartTime(Date.now());
-        setSessionISOStart(new Date().toISOString());
-      }
-    } else {
-      if (isRunning) {
-        setIsRunning(false);
-        if (sessionStartTime) {
-          const delta = (Date.now() - sessionStartTime) / 1000;
-          setAccumulatedTime(prev => prev + delta);
-        }
-        if (sessionISOStart) {
-          logSession(sessionISOStart, new Date().toISOString());
-          setSessionISOStart(null);
-        }
-        setSessionStartTime(null);
-      }
+    if (isActive && !sessionISOStart) {
+      setSessionISOStart(new Date().toISOString());
     }
-  }, [presence, isRunning, sessionStartTime, sessionISOStart]);
-  
-  // Timer Display Update (Drift-Free)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isRunning && sessionStartTime) {
-        const elapsed = (Date.now() - sessionStartTime) / 1000;
-        setDisplayTime(accumulatedTime + elapsed);
-      } else {
-        setDisplayTime(accumulatedTime);
-      }
-    }, 1000); // update once per second
-
-    return () => clearInterval(interval);
-  }, [isRunning, sessionStartTime, accumulatedTime]);
+    if (!isActive && sessionISOStart) {
+      logSession(sessionISOStart, new Date().toISOString());
+      setSessionISOStart(null);
+    }
+  }, [isActive, sessionISOStart]);
 
   // Draw face overlay
   useEffect(() => {
@@ -92,14 +66,10 @@ export default function App() {
   }, [lastFaceLocations]);
 
   const handleRestart = () => {
-    setAccumulatedTime(0);
-    setDisplayTime(0);
-    if (isRunning) {
-      setSessionStartTime(Date.now());
-      if (sessionISOStart) {
-        logSession(sessionISOStart, new Date().toISOString());
-        setSessionISOStart(new Date().toISOString());
-      }
+    resetStopwatch();
+    if (sessionISOStart) {
+      logSession(sessionISOStart, new Date().toISOString());
+      setSessionISOStart(isActive ? new Date().toISOString() : null);
     }
   };
 
