@@ -118,3 +118,14 @@ Project_Report_Extended.pdf
 # =========================
 node_modules/
 *.tsbuildinfo
+
+# =========================
+# Presentations & Local Assets
+# =========================
+*.pptx
+*.ppt
+
+# =========================
+# Vercel & Deployment
+# =========================
+.vercel/
